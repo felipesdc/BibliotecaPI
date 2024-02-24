@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    path('emprestimo/', include('emprestimo.urls')),
     path('usuario/', include('usuario.urls')),
     path('livro/', include('livro.urls')),
     path('admin/', admin.site.urls),
