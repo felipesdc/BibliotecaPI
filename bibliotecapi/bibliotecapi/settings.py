@@ -31,9 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'emprestimo.apps.EmprestimoConfig',
-    'usuario.apps.UsuarioConfig',
-    'livro.apps.LivroConfig',
+    'acervo.apps.AcervoConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
