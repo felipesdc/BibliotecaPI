@@ -1,5 +1,9 @@
 from django.db import models
 
+import uuid  # Required for unique book instances
+from datetime import date
+
+from django.conf import settings  # Required to assign User as a borrower
 from django.urls import reverse  # To generate URLS by reversing URL patterns
 
 
@@ -58,7 +62,7 @@ class Livro(models.Model):
 
     def mostra_genero(self):
         """Representação String para o gênero do livro."""
-        return ', '.join([genre.name for genre in self.genre.all()[:3]])
+        return ', '.join([self.genero.nome for genre in self.genero.all()[:3]])
 
     mostra_genero.short_description = 'Genero'
 
@@ -68,13 +72,9 @@ class Livro(models.Model):
 
     def __str__(self):
         """Representação String do titulo para o modelo Livro"""
-        return self.title
+        return self.titulo
 
 
-import uuid  # Required for unique book instances
-from datetime import date
-
-from django.conf import settings  # Required to assign User as a borrower
 
 
 class LivroCopia(models.Model):
@@ -88,7 +88,7 @@ class LivroCopia(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     @property
-    def em_atrado(self):
+    def em_atraso(self):
         """Determina se o empréstimo está em atraso com base na data_devolucao e data atual."""
         return bool(self.data_devolucao and date.today() > self.data_devolucao)
 
