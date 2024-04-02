@@ -1,0 +1,18 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>SGB Univesp Home</h1>
+  <p>
+    Bem vindo ao Sistema Aberto para Gestão de Bibliotecas – SGB Univesp
+    <br>
+    <em>Projeto Integrador DRP14-Projeto Integrador em Computação I-Turma 005-Grupo 009</em>
+  </p>
+  <h2>Conteúdo dinâmico</h2>
+  <p>Esse sistema atualmente conta com:</p>
+  <ul>
+    <li><strong>Livros:</strong> {{ numero_de_livros }}</li>
+    <li><strong>Cópias:</strong> {{ numero_de_copias }}</li>
+    <li><strong>Cópias Disponíveis:</strong> {{ numero_de_copias_disponiveis }}</li>
+    <li><strong>Autores:</strong> {{ numero_de_autores }}</li>
+  </ul>
+{% endblock %}
