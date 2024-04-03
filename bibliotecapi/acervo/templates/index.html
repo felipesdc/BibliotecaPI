@@ -15,4 +15,8 @@
     <li><strong>Cópias Disponíveis:</strong> {{ numero_de_copias_disponiveis }}</li>
     <li><strong>Autores:</strong> {{ numero_de_autores }}</li>
   </ul>
+
+  <p>
+    Você já visitou essa página {{ numero_de_visitas }} vez{{ numero_de_visitas|pluralize:"es" }}.
+  </p>
 {% endblock %}

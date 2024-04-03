@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from django.views import generic
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Livro, Autor, LivroCopia, Genero, Lingua
-
 
 def index(request):
     """Função para criação de visualização inicial da página."""
@@ -18,12 +18,16 @@ def index(request):
     # O 'all()' é implícito por padrão
     numero_de_autores = Autor.objects.count()
 
+    numero_de_visitas = request.session.get('numero_de_visitas', 0)
+    request.session['numero_de_visitas'] = numero_de_visitas + 1
+
     context = {
         'numero_de_livros': numero_de_livros,
         'numero_de_copias': numero_de_copias,
         'numero_de_copias_disponiveis': numero_de_copias_disponiveis,
         'numero_de_autores': numero_de_autores,
-        'numero_de_generos': numero_de_generos
+        'numero_de_generos': numero_de_generos,
+        'numero_de_visitas': numero_de_visitas
     }
 
     # Render the HTML template index.html with the data in the context variable
@@ -95,3 +99,16 @@ class LivroCopiaDetailView(generic.DetailView):
     model = LivroCopia
     context_object_name = 'copia'
     template_name = 'acervo/detalhe_copia.html'
+
+class CopiasEmprestadasPorUsuarioListView(LoginRequiredMixin,generic.ListView):
+    """Generic class-based view listing books on loan to current user."""
+    model = LivroCopia
+    template_name = 'acervo/lista_copias_emprestadas_usuario.html'
+    paginate_by = 10
+
+    def get_queryset(self):
+        return (
+            LivroCopia.objects.filter(tomador=self.request.user)
+            .filter(estado__exact='e')
+            .order_by('data_devolucao')
+        )

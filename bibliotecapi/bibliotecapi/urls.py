@@ -26,8 +26,7 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/acervo/')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-#Add URL maps to redirect the base URL to our application
-
+# Adição da autenticação Django
 urlpatterns += [
-
+    path('accounts/', include('django.contrib.auth.urls')),
 ]

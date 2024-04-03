@@ -1,6 +1,6 @@
 ## Projeto SGB Univesp
 
-#### Sistema Gerenciador de Bibliotecas Univesp
+#### Sistema Aberto para Gestão de Bibliotecas Univesp
 
 - Desenvolvido para o Projeto Integrador I
 - DRP14-Projeto Integrador em Computação I-Turma 005-Grupo 009

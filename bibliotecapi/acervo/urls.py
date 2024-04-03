@@ -32,3 +32,7 @@ urlpatterns += [
     path('copia/<uuid:pk>', views.LivroCopiaDetailView.as_view(),
          name='detalhe-copia'),
 ]
+
+urlpatterns += [
+    path('emprestimos/', views.CopiasEmprestadasPorUsuarioListView.as_view(), name='meus-emprestimos'),
+]
