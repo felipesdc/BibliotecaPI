@@ -1,0 +1,24 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Lista de Gêneros</h1>
+
+{% if lista_generos %}
+  <ul>
+
+  {% for genero in lista_generos %}
+    <li>
+      <a href="{{ genero.get_absolute_url }}">
+      {{ genero }}
+      </a>
+    </li>
+  {% endfor %}
+
+ </ul>
+{% else %}
+  <p>Não há gêneros disponíveis.</p>
+{% endif %}
+
+
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Genero: {{ genero.nome }}</h1>
+
+<div style="margin-left:20px;margin-top:20px">
+<h4>Livros desse gênero</h4>
+
+<ul>
+  {% for copia in genero.livro_set.all %}
+  <li>
+    <a href="{{ copia.get_absolute_url }}">{{ copia.titulo }}</a> ({{copia.autor}})
+  </li>
+  {% empty %}
+  <li>Não há livros disponíveis desse gênero.</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}
+

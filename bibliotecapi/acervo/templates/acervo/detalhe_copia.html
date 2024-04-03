@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Cópia de Livro: {{ copia.livro.titulo }}</h1>
+
+<p><strong>Autor:</strong> <a href="{{ copia.livro.autor.get_absolute_url }}">{{ copia.livro.autor }}</a></p>
+
+<p><strong>Editora:</strong> {{ copia.editora }}</p>
+<p><strong>Estado:</strong> {{ copia.get_estado_display }} {% if copia.estado != 'd' %} (Devolução: {{copia.data_devolucao}}){% endif %}</p>
+
+<hr>
+<ul>
+  <li>
+    <a href="{{ copia.livro.get_absolute_url }}">Totas as cópias</a></p>
+  </li>
+</ul>
+{% endblock %}
+

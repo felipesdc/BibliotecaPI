@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Lingua: {{ lingua.nome }}</h1>
+
+<div style="margin-left:20px;margin-top:20px">
+<h4>Livros nessa língua</h4>
+
+<ul>
+  {% for copia in lingua.livro_set.all %}
+  <li>
+    <a href="{{ copia.get_absolute_url }}">{{ copia.titulo }}</a>
+  </li>
+  {% empty %}
+  <li>Não há livros disponíveis nessa língua.</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}
+

@@ -1,0 +1,16 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Cópias de Livros na Biblioteca</h1>
+
+    <ul>
+      {% for copia in lista_copias %}
+      <li class="{% if copia.em_atraso %}text-danger{% endif %}">
+        <a href="{% url 'detalhe-copia' copia.pk %}">{{copia.livro.titulo}}</a>
+      </li>
+      {% empty %}
+      <li>Não há cópias desse livro disponíveis.</li>
+      {% endfor %}
+    </ul>
+
+{% endblock %}
