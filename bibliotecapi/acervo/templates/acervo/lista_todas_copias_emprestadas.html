@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Todos Empréstimos</h1>
+
+    {% if livrocopia_list %}
+    <ul>
+
+      {% for copia in livrocopia_list %}
+      <li class="{% if copia.em_atraso %}text-danger{% endif %}">
+        <a href="{% url 'detalhe-livro' copia.livro.pk %}">{{copia.livro.titulo}}</a> ({{ copia.data_devolucao }}) {% if user.is_staff %}- {{ copia.tomador }}{% endif %} {% if perms.acervo.marca_devolucao %}- <a href="{% url 'renovacao-emprestimo-bibliotecario' copia.id %}">Renovação</a>  {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% else %}
+      <p>Não há empréstimos.</p>
+    {% endif %}       
+{% endblock %}

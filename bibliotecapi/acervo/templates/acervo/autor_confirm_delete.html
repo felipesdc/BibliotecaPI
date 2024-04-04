@@ -1,0 +1,25 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Excluir Autor: {{ autor }}</h1>
+
+{% if autor.livro_set.all %}
+
+<p>Não é possível excluir esse autor enquanto houver livros de sua autoria no cadastro:</p>
+<ul>
+  {% for livro in autor.livro_set.all %}
+    <li><a href="{% url 'detalhe-livro' livro.pk %}">{{livro}}</a> ({{livro.livrocopia_set.all.count}})</li>
+  {% endfor %}
+</ul>
+
+{% else %}
+<p>Tem certeza que deseja excluir esse autor?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" action="" value="Sim, excluir.">
+</form>
+{% endif %}
+
+{% endblock %}

@@ -19,3 +19,19 @@
 
 {% endblock %}
 
+{% block sidebar %}
+  {{ block.super }}
+
+  {% if perms.acervo.change_lingua or perms.acervo.delete_lingua %}
+  <hr>
+  <ul class="sidebar-nav">
+    {% if perms.acervo.change_lingua %}
+      <li><a href="{% url 'alterar-lingua' lingua.id %}">Alterar Lingua</a></li>
+    {% endif %}
+    {% if not lingua.livro_set.all and perms.acervo.delete_lingua %}
+      <li><a href="{% url 'excluir-lingua' lingua.id %}">Excluir Lingua</a></li>
+    {% endif %}
+    </ul>
+  {% endif %}
+
+{% endblock %}

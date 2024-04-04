@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Excluir Cópia de Livro: {{ livrocopia }}</h1>
+
+<p>Tem certeza que deseja excluir essa cópia de livro?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" action="" value="Sim, excluir.">
+</form>
+
+{% endblock %}

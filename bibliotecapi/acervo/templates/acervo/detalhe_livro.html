@@ -24,3 +24,20 @@
 {% endfor %}
 </div>
 {% endblock %}
+
+{% block sidebar %}
+  {{ block.super }}
+
+  {% if perms.acervo.change_livro or perms.acervo.delete_livro %}
+  <hr>
+  <ul class="sidebar-nav">
+    {% if perms.acervo.change_livro %}
+      <li><a href="{% url 'alterar-livro' livro.id %}">Alterar Livro</a></li>
+    {% endif %}
+    {% if not livro.livrocopia_set.all and perms.acervo.delete_livro %}
+      <li><a href="{% url 'excluir-livro' livro.id %}">Excluir Livro</a></li>
+    {% endif %}
+    </ul>
+  {% endif %}
+
+{% endblock %}

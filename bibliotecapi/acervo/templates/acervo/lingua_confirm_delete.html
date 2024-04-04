@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Excluir Lingua: {{ lingua }}</h1>
+
+<p>Tem certeza que deseja excluir essa lingua?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" action="" value="Sim, excluir.">
+</form>
+
+{% endblock %}

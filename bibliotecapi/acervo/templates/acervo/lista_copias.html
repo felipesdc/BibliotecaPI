@@ -6,7 +6,7 @@
     <ul>
       {% for copia in lista_copias %}
       <li class="{% if copia.em_atraso %}text-danger{% endif %}">
-        <a href="{% url 'detalhe-copia' copia.pk %}">{{copia.livro.titulo}}</a>
+        <a href="{% url 'detalhe-copia' copia.pk %}">{{copia.livro.titulo}}</a> ({{ copia.data_devolucao }}) {% if user.is_staff %}- {{ copia.tomador }}{% endif %} {% if perms.acervo.marca_devolucao %}- <a href="{% url 'renovacao-emprestimo-bibliotecario' copia.id %}">Renovação</a>  {% endif %}
       </li>
       {% empty %}
       <li>Não há cópias desse livro disponíveis.</li>

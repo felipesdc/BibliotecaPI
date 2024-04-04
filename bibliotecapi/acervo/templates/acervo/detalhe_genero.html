@@ -19,3 +19,19 @@
 
 {% endblock %}
 
+{% block sidebar %}
+  {{ block.super }}
+
+  {% if perms.acervo.change_genero or perms.acervo.delete_genero %}
+  <hr>
+  <ul class="sidebar-nav">
+    {% if perms.acervo.change_genero %}
+    <li><a href="{% url 'alterar-genero' genero.id %}">Alterar Gênero</a></li>
+    {% endif %}
+    {% if not genero.livro_set.all and perms.acervo.excluir_genero %}
+      <li><a href="{% url 'excluir-genero' genero.id %}">Excluir Gênero</a></li>
+    {% endif %}
+    </ul>
+  {% endif %}
+
+{% endblock %}

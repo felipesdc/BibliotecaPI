@@ -19,3 +19,21 @@
 
 </div>
 {% endblock %}
+
+
+{% block sidebar %}
+  {{ block.super }}
+
+  {% if perms.acervo.change_autor or perms.acervo.delete_autor %}
+  <hr>
+  <ul class="sidebar-nav">
+    {% if perms.acervo.change_autor %}
+      <li><a href="{% url 'alterar-autor' autor.id %}">Alterar autor</a></li>
+    {% endif %}
+    {% if not autor.livro_set.all and perms.acervo.delete_autor %}
+      <li><a href="{% url 'excluir-autor' autor.id %}">Excluir autor</a></li>
+    {% endif %}
+    </ul>
+  {% endif %}
+
+{% endblock %}

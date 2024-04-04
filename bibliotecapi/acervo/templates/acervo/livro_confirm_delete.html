@@ -1,0 +1,25 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Excluir Livro</h1>
+
+{% if livro.livrocopia_set.all %}
+<p>Não é possível excluir o livro se houver cópias cadastradas:</p>
+
+<ul>
+{% for copia in livro.livrocopia_set.all %}
+  <li><a href="{{ copia.get_absolute_url }}">{{copia.id}}</a> (Editora: {{copia.editora}})</li>
+{% endfor %}
+</ul>
+
+{% else %}
+<p>Tem certeza que deseja excluir o livro: {{ livro }}?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" action="" value="Sim, excluir.">
+</form>
+{% endif %}
+
+{% endblock %}

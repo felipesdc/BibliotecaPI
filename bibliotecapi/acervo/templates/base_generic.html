@@ -46,6 +46,28 @@
             …
           </ul>
 
+          {% if user.is_staff %}
+         <hr>
+         <ul class="sidebar-nav">
+         <li>Bibliotecários</li>
+         <li><a href="{% url 'todos-emprestimos' %}">Todos Empréstimos</a></li>
+         {% if perms.acervo.add_genero %}
+           <li><a href="{% url 'adicionar-genero' %}">Adicionar Gênero</a></li>
+         {% endif %}
+         {% if perms.acervo.add_lingua %}
+           <li><a href="{% url 'adicionar-lingua' %}">Adicionar Língua</a></li>
+         {% endif %}
+         {% if perms.acervo.add_autor %}
+           <li><a href="{% url 'adicionar-autor' %}">Adicionar Autor</a></li>
+         {% endif %}
+         {% if perms.acervo.add_livro %}
+           <li><a href="{% url 'adicionar-livro' %}">Adicionar Livro</a></li>
+         {% endif %}
+         {% if perms.acervo.add_livrocopia %}
+           <li><a href="{% url 'adicionar-copia' %}">Adicionar Cópia de Livro</a></li>
+         {% endif %}
+         </ul>
+         {% endif %}
 
           {% endblock %}
         </div>

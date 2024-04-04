@@ -17,3 +17,19 @@
 </ul>
 {% endblock %}
 
+{% block sidebar %}
+  {{ block.super }}
+
+  {% if perms.acervo.change_livrocopia or perms.acervo.delete_livrocopia %}
+  <hr>
+  <ul class="sidebar-nav">
+    {% if perms.acervo.change_livrocopia %}
+      <li><a href="{% url 'alterar-copia' copia.id %}">Alterar Cópia</a></li>
+    {% endif %}
+    {% if perms.acervo.delete_livrocopia %}
+      <li><a href="{% url 'excluir-copia' copia.id %}">Excluir Cópia</a></li>
+    {% endif %}
+  </ul>
+  {% endif %}
+
+{% endblock %}
