@@ -1,9 +1,0 @@
-{
-  "artifactLocation": "/bin/staticsites/6f3bef4e-39c7-41cb-ae8a-0d12e3330cda-swa-oryx/app",
-  "routes": [
-    {
-      "route": "/*",
-      "serve": "/bin/staticsites/6f3bef4e-39c7-41cb-ae8a-0d12e3330cda-swa-oryx/app"
-    }
-  ]
-}
