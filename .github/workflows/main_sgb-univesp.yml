@@ -76,7 +76,7 @@ jobs:
           app-name: 'sgb-univesp'
           slot-name: 'Production'
       - name: 'Run Django server'
-          run:
-            cd bibliotecapi
-            python manage.py migrate
-            python manage.py runserver &
+        run: |
+          cd bibliotecapi
+          python manage.py migrate
+          python manage.py runserver &
