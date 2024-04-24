@@ -3,7 +3,7 @@
         {
             "src": "build_files.sh",
             "use": "@vercel/static-build",
-            "config": {"distDir": "ui/staticfiles"}
+            "config": {"distDir": "staticfiles"}
         },
         {
             "src": "bibliotecapi/wsgi.py",
@@ -21,5 +21,5 @@
             "dest": "/static/$1"
         }
     ],
-    "outputDirectory": "ui/staticfiles"
+    "outputDirectory": "staticfiles"
 }
