@@ -34,7 +34,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'eiepdd0s*wu41ojc-da*=ai*4*(cey
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.vercel.app']
 
 
 # Application definition
@@ -117,8 +117,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'pt-BR'
 
-#TIME_ZONE = 'America/Sao_paulo'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_paulo'
+#TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
