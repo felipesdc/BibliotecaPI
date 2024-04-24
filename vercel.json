@@ -8,7 +8,7 @@
     ],
     "routes": [
         {
-            "src": "/bibliotecapi/(.*)",
+            "src": "/(.*)",
             "dest": "bibliotecapi/wsgi.py"
         }
     ]

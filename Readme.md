@@ -7,5 +7,6 @@
 - Baseado em:
 
 ```https://github.com/mdn/django-locallibrary-tutorial```
+
 ```https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django```
 
