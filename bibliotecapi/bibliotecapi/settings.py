@@ -141,9 +141,10 @@ LOGIN_REDIRECT_URL = '/'
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 # The absolute path to the directory where collectstatic will collect static files for deployment.
 #STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATIC_ROOT = BASE_DIR / "staticfiles" / "static"
+#STATIC_ROOT = BASE_DIR / "staticfiles" / "static"
 # The URL to use when referring to static files (where they will be served from)
-
+STATICFILES_DIRS = os.path.join(BASE_DIR, 'static'),
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # Static file serving.
 # https://whitenoise.readthedocs.io/en/stable/django.html#add-compression-and-caching-support
