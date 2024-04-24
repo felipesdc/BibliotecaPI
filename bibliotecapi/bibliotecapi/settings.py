@@ -79,7 +79,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'bibliotecapi.wsgi.application'
+WSGI_APPLICATION = 'bibliotecapi.wsgi.app'
 
 
 # Database
