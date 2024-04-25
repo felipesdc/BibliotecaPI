@@ -3,3 +3,4 @@ python-dotenv==1.0.1
 gunicorn==21.2.0
 whitenoise==6.5.0
 tzdata
+psycopg2-binary
