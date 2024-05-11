@@ -138,6 +138,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/'
 
+# Adicionado para fins de teste de password reset
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 #STORAGES = {__file__
 #    "staticfiles": {
