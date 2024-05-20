@@ -278,5 +278,5 @@ class AlterarLivroCopia(PermissionRequiredMixin, UpdateView):
 
 class ExcluirLivroCopia(PermissionRequiredMixin, DeleteView):
     model = LivroCopia
-    success_url = reverse_lazy('livrocopias')
+    success_url = reverse_lazy('copias')
     permission_required = 'acervo.delete_livrocopia'
