@@ -2,12 +2,12 @@
 
 # Update pip
 echo "Updating pip..."
-python pip install -U pip
+pip install -U pip
 
 # Install dependencies
 
 echo "Installing project dependencies..."
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
 
 # Make migrations
 echo "Making migrations..."
