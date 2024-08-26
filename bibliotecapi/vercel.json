@@ -3,12 +3,12 @@
         {
             "src": "build_files.sh",
             "use": "@vercel/static-build",
-            "config": {"distDir": "staticfiles"}
+            "config": {"distDir": "static"}
         },
         {
             "src": "bibliotecapi/wsgi.py",
             "use": "@vercel/python",
-            "config": {"maxLambdaSize": "15mb", "runtime": "python3.12"}
+            "config": {"maxLambdaSize": "15mb"}
         }
     ],
     "routes": [
