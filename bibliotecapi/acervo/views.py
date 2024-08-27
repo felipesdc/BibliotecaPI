@@ -1,6 +1,16 @@
-from django.shortcuts import render, get_object_or_404
+import datetime
+
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required, permission_required
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+
+from .forms import RenovacaoEmprestimoForm
 
 from .models import Livro, Autor, LivroCopia, Genero, Lingua
 
@@ -34,17 +44,18 @@ def index(request):
     return render(request, 'index.html', context=context)
 
 
-
 class ListaLivrosView(generic.ListView):
     model = Livro
     context_object_name = 'lista_livros'
     template_name = 'acervo/lista_livros.html'
     paginate_by = 10
 
+
 class DetalheLivroView(generic.DetailView):
     model = Livro
     context_object_name = 'livro'
     template_name = 'acervo/detalhe_livro.html'
+
 
 class AutorListView(generic.ListView):
     """Classe genérica para visão lista de Autores."""
@@ -53,11 +64,13 @@ class AutorListView(generic.ListView):
     template_name = 'acervo/lista_autores.html'
     paginate_by = 10
 
+
 class AutorDetailView(generic.DetailView):
     """Classe genérica para visão detalhe do Autor."""
     model = Autor
     context_object_name = 'autor'
     template_name = 'acervo/detalhe_autor.html'
+
 
 class GeneroListView(generic.ListView):
     """Classe genérica para visão detalhe do Gênero."""
@@ -73,6 +86,7 @@ class GeneroDetailView(generic.DetailView):
     context_object_name = 'genero'
     template_name = 'acervo/detalhe_genero.html'
 
+
 class LinguaListView(generic.ListView):
     """Classe genérica para visão detalhe da língua."""
     model = Lingua
@@ -80,11 +94,13 @@ class LinguaListView(generic.ListView):
     template_name = 'acervo/lista_linguas.html'
     paginate_by = 10
 
+
 class LinguaDetailView(generic.DetailView):
     """Classe genérica para visão lista das Línguas."""
     model = Lingua
     context_object_name = 'lingua'
     template_name = 'acervo/detalhe_lingua.html'
+
 
 class LivroCopiaListView(generic.ListView):
     """Classe genérica para visão lista das Cópias de Livros."""
@@ -100,6 +116,7 @@ class LivroCopiaDetailView(generic.DetailView):
     context_object_name = 'copia'
     template_name = 'acervo/detalhe_copia.html'
 
+
 class CopiasEmprestadasPorUsuarioListView(LoginRequiredMixin,generic.ListView):
     """Classe genérica para visão lista das Cópias emprestadas por usuários."""
     model = LivroCopia
@@ -114,8 +131,6 @@ class CopiasEmprestadasPorUsuarioListView(LoginRequiredMixin,generic.ListView):
         )
 
 
-from django.contrib.auth.mixins import PermissionRequiredMixin
-
 class TodosEmprestimosListView(PermissionRequiredMixin, generic.ListView):
     """Classe genérica para visão lista de todas as Cópias emprestadas. Somente para usuários com permissão marca_devolucao"""
     model = LivroCopia
@@ -126,15 +141,6 @@ class TodosEmprestimosListView(PermissionRequiredMixin, generic.ListView):
     def get_queryset(self):
         return LivroCopia.objects.filter(estado__exact='e').order_by('data_devolucao')
 
-
-import datetime
-
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from django.contrib.auth.decorators import login_required, permission_required
-
-from .forms import RenovacaoEmprestimoForm
 
 @login_required
 @permission_required('acervo.marca_devolucao', raise_exception=True)
@@ -168,8 +174,6 @@ def renovacao_emprestimo_bibliotecario(request, pk):
 
     return render(request, 'acervo/renovacao_emprestimo_bibliotecario.html', context)
 
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
 
 class AdicionarAutor(PermissionRequiredMixin, CreateView):
     model = Autor
@@ -177,11 +181,13 @@ class AdicionarAutor(PermissionRequiredMixin, CreateView):
     initial = {'data_falecimento': datetime.date.today()}
     permission_required = 'acervo.add_autor'
 
+
 class AlterarAutor(PermissionRequiredMixin, UpdateView):
     model = Autor
     # Not recommended (potential security issue if more fields added)
     fields = '__all__'
     permission_required = 'acervo.change_autor'
+
 
 class ExcluirAutor(PermissionRequiredMixin, DeleteView):
     model = Autor

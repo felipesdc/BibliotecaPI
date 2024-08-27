@@ -15,7 +15,7 @@ echo "Making migrations..."
 python3.12 manage.py makemigrations --noinput
 python3.12 manage.py migrate --noinput
 
-# Collect staticfiles
+# Collect static
 echo "Collect static..."
 python3.12 manage.py collectstatic --noinput --clear
 
