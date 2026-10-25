@@ -77,6 +77,21 @@ Códigos já cadastrados são preservados e ignorados no reenvio. Sem código, o
 
 Para criar mais uma conta da equipe, execute novamente `preparar_biblioteca`. Para administração avançada, use `manage.py createsuperuser`; a equipe comum opera pela interface principal.
 
+## Relatórios gerenciais e demonstração
+
+O menu **Relatórios gerenciais** reúne situação do acervo, circulação mensal, atrasos, próximos vencimentos, títulos mais emprestados, atividade dos leitores e importações. Há filtro de período, exportações CSV e impressão. O acesso exige permissão específica; a equipe Bibliotecários do piloto recebe essa permissão na atualização.
+
+Para explorar dados fictícios sem misturar com a biblioteca, use a demonstração em **http://localhost:8001**:
+
+```sh
+docker compose -f compose.demo.yaml up -d --build --wait
+docker compose -f compose.demo.yaml exec app python manage.py carregar_demonstracao
+```
+
+Acesse como `gestor_demo`, com a senha fictícia `BibliotecaDemo2026!`. A carga cria todas as estruturas de negócio, incluindo 24 títulos, 72 exemplares, 30 leitores e 210 empréstimos. A instalação principal permanece no seu volume e na porta 8000.
+
+[Critérios dos relatórios, contas e dados da demonstração](docs/RELATORIOS_E_DEMONSTRACAO.md).
+
 ## Dados e backup
 
 O banco local novo fica em `bibliotecapi/biblioteca.sqlite3`. O `db.sqlite3` original foi preservado e não é migrado automaticamente para o banco novo.

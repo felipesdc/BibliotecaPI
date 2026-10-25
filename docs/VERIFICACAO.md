@@ -48,3 +48,17 @@ Também validada em 24/10/2026, em container Linux ARM64 no Docker Desktop:
 - Ambiente de teste encerrado; instalação principal separada, sem os registros artificiais.
 
 Procedimentos atuais: [guia Docker](DOCKER.md). Esta etapa substitui a opção anterior de PostgreSQL e a configuração Vercel legada. Não foi realizado build AMD64 nem teste de carga.
+
+## Relatórios e demonstração — 25/10/2026
+
+- **39 testes aprovados localmente e dentro do container**: inclui filtros inválidos, limites inclusivos de datas no fuso de São Paulo, meses sem movimento, divisão por zero, devoluções de retiradas anteriores ao período, gêneros sem duplicar rankings, acesso por permissão e exportações sem truncar resultados.
+- Carga fictícia executada em `bibliotecapi-demo`, no volume independente `bibliotecapi-demo_demonstracao_dados`: 8 autores, 6 gêneros, 3 idiomas, 24 títulos, 72 exemplares, 30 leitores, 210 empréstimos, 2 importações e 2 contas de acesso.
+- Reexecução da carga confirmou que não houve duplicação nem sobrescrita.
+- HTTP real, com autenticação e CSRF: as oito exportações retornaram 200. CSV de empréstimos com 210 linhas; devoluções, 192; atrasos, 9; títulos, 24; leitores, 30; circulação mensal, 7; composição do acervo, 7; resumo, 22.
+- Conta de atendente recebeu 403 tanto na tela quanto no CSV de resumo. Conta de gestor acessou os relatórios.
+- No Chrome desktop, conferidos os cards, gráficos mensais e tabelas; a prévia de impressão ocultou navegação e controles e manteve os dados legíveis. Nenhum arquivo ou impressão física foi gerado nessa conferência.
+- Intervalo de outubro conferido no navegador: 15 retiradas, nenhuma devolução e “—” para pontualidade e duração média, mantendo os 72 exemplares e 9 atrasos atuais.
+- Instalação principal atualizada em `localhost:8000`; não contém contas ou registros da demonstração. Demonstração em `localhost:8001`; ambas saudáveis.
+- Nenhuma migration pendente de geração, e `git diff --check` sem problemas.
+
+Critérios, acessos fictícios e reprodução: [relatórios e demonstração](RELATORIOS_E_DEMONSTRACAO.md). A conferência visual foi feita no desktop; não houve teste em celular físico nem teste de carga.
