@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views, views_relatorios
 
 
 urlpatterns = [
@@ -77,3 +77,18 @@ urlpatterns += [
     path('copia/<uuid:pk>/excluir/',
          views.ExcluirLivroCopia.as_view(), name='excluir-copia'),
 ]
+
+urlpatterns += [
+    path('importar/', views.importar_acervo, name='importar-acervo'),
+    path('importar/<int:pk>/', views.mapear_importacao, name='mapear-importacao'),
+    path('modelo/', views.modelo_importacao, name='modelo-importacao'),
+    path('exportar/', views.exportar_acervo, name='exportar-acervo'),
+    path('leitores/', views.LeitoresView.as_view(), name='leitores'),
+    path('leitores/adicionar/', views.AdicionarLeitor.as_view(), name='adicionar-leitor'),
+    path('leitores/<int:pk>/alterar/', views.AlterarLeitor.as_view(), name='alterar-leitor'),
+    path('copia/<uuid:pk>/emprestar/', views.emprestar, name='emprestar'),
+    path('copia/<uuid:pk>/devolver/', views.devolver, name='devolver'),
+    path('historico/', views.HistoricoView.as_view(), name='historico'),
+]
+
+urlpatterns += [path('relatorios/', views_relatorios.relatorios, name='relatorios')]

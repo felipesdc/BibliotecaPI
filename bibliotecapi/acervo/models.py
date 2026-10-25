@@ -42,27 +42,27 @@ class Lingua(models.Model):
 class Livro(models.Model):
     """Modelo para representar um Livro (mas não uma cópia)"""
     titulo = models.CharField(max_length=200)
-    autor = models.ForeignKey('Autor', on_delete=models.RESTRICT, null=True)
+    autor = models.ForeignKey('Autor', on_delete=models.RESTRICT, null=True, blank=True)
     # Chave estrangeira para Autor, um livro pode ter um autor, um autor pode ter muitos livros.
     descricao = models.TextField(
-        max_length=1000, help_text="Breve descrição do livro")
-    isbn = models.CharField('ISBN', max_length=13,
+        max_length=1000, blank=True, help_text="Breve descrição do livro")
+    isbn = models.CharField('ISBN', max_length=13, blank=True, null=True,
                             unique=True,
                             help_text='13 Caracteres <a href="https://www.isbn-international.org/content/what-isbn'
                                       '">ISBN number</a>')
     genero = models.ManyToManyField(
-        Genero, help_text="Selecione o gênero do livro")
+        Genero, blank=True, help_text="Selecione o gênero do livro")
     # Campo ManyToManyField por livro poder ter vários gêneros e gêneros englobarem vários livros
 
     lingua = models.ForeignKey(
-        'Lingua', on_delete=models.SET_NULL, null=True)
+        'Lingua', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ['titulo', 'autor']
 
     def mostra_genero(self):
         """Representação String para o gênero do livro."""
-        return ', '.join([self.genero.nome for genre in self.genero.all()[:3]])
+        return ', '.join([genre.nome for genre in self.genero.all()[:3]])
 
     mostra_genero.short_description = 'Genero'
 
@@ -82,15 +82,29 @@ class LivroCopia(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4,
                           help_text="ID único para uma cópia do livro disponível na biblioteca")
     livro = models.ForeignKey('Livro', on_delete=models.RESTRICT, null=True)
-    editora = models.CharField(max_length=200)
+    codigo = models.CharField('Código do exemplar', max_length=100, unique=True, null=True, blank=True)
+    leitor = models.ForeignKey('Leitor', on_delete=models.PROTECT, null=True, blank=True)
+    editora = models.CharField(max_length=200, blank=True)
     data_devolucao = models.DateField(null=True, blank=True)
     tomador = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if not self.codigo:
+            self.codigo = 'BIB-' + self.id.hex
+        return super().save(*args, **kwargs)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.estado == 'e' and (not self.data_devolucao or not (self.leitor_id or self.tomador_id)):
+            raise ValidationError('Um exemplar emprestado precisa de leitor e prazo de devolução.')
+        if self.estado != 'e' and (self.leitor_id or self.tomador_id or self.data_devolucao):
+            raise ValidationError('Somente exemplares emprestados podem ter leitor e prazo de devolução.')
+
     @property
     def em_atraso(self):
         """Determina se o empréstimo está em atraso com base na data_devolucao e data atual."""
-        return bool(self.data_devolucao and date.today() > self.data_devolucao)
+        return bool(self.estado == 'e' and self.data_devolucao and date.today() > self.data_devolucao)
 
     ESTADOS_EMPRESTIMO = (
         ('m', 'Manutenção'),
@@ -103,7 +117,7 @@ class LivroCopia(models.Model):
         max_length=1,
         choices=ESTADOS_EMPRESTIMO,
         blank=True,
-        default='m',
+        default='d',
         help_text='Disponibilidade do Livro')
 
     class Meta:
@@ -116,7 +130,7 @@ class LivroCopia(models.Model):
 
     def __str__(self):
         """Representacao String para a cópia do livro."""
-        return f'{self.id} ({self.livro.titulo})'
+        return f'{self.codigo or str(self.id)[:8]} ({self.livro.titulo if self.livro else "Sem livro"})'
 
 
 class Autor(models.Model):
@@ -136,3 +150,42 @@ class Autor(models.Model):
     def __str__(self):
         """Representação String do modelo Autor."""
         return f'{self.sobrenome}, {self.primeiro_nome}'
+
+class Leitor(models.Model):
+    nome = models.CharField(max_length=200)
+    email = models.EmailField(blank=True)
+    telefone = models.CharField(max_length=30, blank=True)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['nome', 'pk']
+
+    def __str__(self):
+        return f'{self.nome} (#{self.pk})'
+
+    def get_absolute_url(self):
+        return reverse('leitores')
+
+
+class Emprestimo(models.Model):
+    copia = models.ForeignKey(LivroCopia, on_delete=models.PROTECT)
+    leitor = models.ForeignKey(Leitor, on_delete=models.PROTECT, null=True, blank=True)
+    tomador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='historico_biblioteca')
+    realizado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='operacoes_biblioteca')
+    criado_em = models.DateTimeField(auto_now_add=True, db_index=True)
+    prazo = models.DateField()
+    devolvido_em = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        permissions = [('view_relatorios', 'Pode consultar relatórios gerenciais')]
+        constraints = [models.UniqueConstraint(fields=['copia'], condition=models.Q(devolvido_em__isnull=True), name='um_emprestimo_aberto_por_copia')]
+
+
+class Importacao(models.Model):
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    nome = models.CharField(max_length=255)
+    dados = models.JSONField(default=dict)
+    resultado = models.JSONField(default=dict)
+    concluida = models.BooleanField(default=False)

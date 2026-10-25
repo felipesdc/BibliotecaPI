@@ -28,7 +28,7 @@
     {% if perms.acervo.change_genero %}
     <li><a href="{% url 'alterar-genero' genero.id %}">Alterar Gênero</a></li>
     {% endif %}
-    {% if not genero.livro_set.all and perms.acervo.excluir_genero %}
+    {% if not genero.livro_set.all and perms.acervo.delete_genero %}
       <li><a href="{% url 'excluir-genero' genero.id %}">Excluir Gênero</a></li>
     {% endif %}
     </ul>

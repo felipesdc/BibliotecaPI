@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Autor, Genero, Livro, LivroCopia, Lingua
+from .models import Autor, Genero, Livro, LivroCopia, Lingua, Leitor, Emprestimo
 
 """Minimal registration of Models.
 admin.site.register(Book)
@@ -51,7 +51,7 @@ class LivroAdmin(admin.ModelAdmin):
     inlines = [LivroCopiaInline]
 
 
-admin.site.register(Livro)
+admin.site.register(Livro, LivroAdmin)
 
 
 @admin.register(LivroCopia)
@@ -64,13 +64,27 @@ class LivroCopiaAdmin(admin.ModelAdmin):
     """
     list_display = ('livro', 'estado', 'tomador', 'data_devolucao', 'id')
     list_filter = ('estado', 'data_devolucao')
+    readonly_fields = ('estado', 'tomador', 'data_devolucao', 'leitor')
+    search_fields = ('codigo', 'livro__titulo')
 
     fieldsets = (
         (None, {
-            'fields': ('livro', 'editora', 'id')
+            'fields': ('livro', 'codigo', 'editora', 'id')
         }),
         ('Availability', {
-            'fields': ('estado', 'data_devolucao', 'tomador')
+            'fields': ('estado', 'data_devolucao', 'tomador', 'leitor')
         }),
     )
+
+
+admin.site.register(Leitor)
+@admin.register(Emprestimo)
+class EmprestimoAdmin(admin.ModelAdmin):
+    list_display = ('copia', 'leitor', 'prazo', 'devolvido_em')
+    def has_add_permission(self, request):
+        return False
+    def has_change_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
 

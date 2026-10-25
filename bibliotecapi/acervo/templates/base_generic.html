@@ -1,77 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    {% block title %}
-      <title>SGB</title>
+<html lang="pt-BR">
+<head>
+  {% load static %}
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  {% block title %}<title>BibliotecaPI · Acervo e circulação</title>{% endblock %}
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231b5149'/%3E%3Ctext x='14' y='46' font-size='43' fill='%23fff'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <aside class="sidebar">
+    <a class="brand" href="{% url 'index' %}"><span class="brand-mark" aria-hidden="true">B<span>↗</span></span><span>Biblioteca<span class="brand-pi">PI</span><small>HISTÓRIAS EM CIRCULAÇÃO</small></span></a>
+    {% block sidebar %}
+    <p class="nav-label">BIBLIOTECA</p>
+    <nav aria-label="Navegação principal"><ul class="sidebar-nav">
+      <li><a href="{% url 'index' %}" {% if request.resolver_match.url_name == 'index' %}aria-current="page"{% endif %}><span aria-hidden="true">◫</span> Visão geral</a></li>
+      <li><a href="{% url 'livros' %}" {% if request.resolver_match.url_name == 'livros' %}aria-current="page"{% endif %}><span aria-hidden="true">▤</span> Catálogo de livros</a></li>
+      <li><a href="{% url 'copias' %}" {% if request.resolver_match.url_name == 'copias' %}aria-current="page"{% endif %}><span aria-hidden="true">▥</span> Exemplares</a></li>
+      <li><a href="{% url 'autores' %}"><span aria-hidden="true">✎</span> Autores</a></li>
+      <li><a href="{% url 'generos' %}"><span aria-hidden="true">◇</span> Gêneros</a></li>
+      <li><a href="{% url 'linguas' %}"><span aria-hidden="true">◎</span> Idiomas</a></li>
+    </ul></nav>
+    {% if user.is_authenticated %}
+    <p class="nav-label">CIRCULAÇÃO</p>
+    <nav aria-label="Circulação"><ul class="sidebar-nav">
+      {% if perms.acervo.marca_devolucao %}<li><a href="{% url 'todos-emprestimos' %}">↗ <span>Empréstimos</span></a></li><li><a href="{% url 'historico' %}">◷ <span>Histórico</span></a></li>{% endif %}
+      {% if perms.acervo.view_relatorios %}<li><a href="{% url 'relatorios' %}" {% if request.resolver_match.url_name == 'relatorios' %}aria-current="page"{% endif %}>◫ <span>Relatórios gerenciais</span></a></li>{% endif %}
+      {% if perms.acervo.view_leitor %}<li><a href="{% url 'leitores' %}">♧ <span>Leitores</span></a></li>{% endif %}
+      {% if perms.acervo.add_livro and perms.acervo.add_livrocopia and perms.acervo.add_autor and perms.acervo.add_genero and perms.acervo.add_lingua %}<li class="mobile-link"><a href="{% url 'importar-acervo' %}">↓ Importar planilha</a></li>{% endif %}
+      <li><a href="{% url 'meus-emprestimos' %}">▱ <span>Meus empréstimos</span></a></li>
+    </ul></nav>
+    {% if perms.acervo.add_livro and perms.acervo.add_livrocopia and perms.acervo.add_autor and perms.acervo.add_genero and perms.acervo.add_lingua %}
+    <div class="import-callout"><span class="nav-label">DO EXCEL PARA A BIBLIOTECA</span><p>Seu acervo, em um só lugar.</p><a href="{% url 'importar-acervo' %}">Importar planilha <span aria-hidden="true">↗</span></a></div>
+    {% endif %}
+    {% endif %}
     {% endblock %}
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Add additional CSS in static file -->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'fa/css/all.min.css' %}">
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
-  </head>
-  <body>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-2">
-          {% block sidebar %}
-            <ul class="sidebar-nav">
-              <li><a href="{% url 'index' %}">Home</a></li>
-              <li><a href="{% url 'livros' %}">Todos Livros</a></li>
-              <li><a href="{% url 'copias' %}">Todas Cópias de Livros</a></li>
-              <li><a href="{% url 'autores' %}">Todos Autores</a></li>
-              <li><a href="{% url 'generos' %}">Todos Gêneros</a></li>
-              <li><a href="{% url 'linguas' %}">Todas Línguas</a></li>
-            </ul>
-            <ul class="sidebar-nav">
-            …
-           {% if user.is_authenticated %}
-             <li>Usuário: {{ user.get_username }}</li>
-
-              <li><a href="{% url 'meus-emprestimos' %}">Meus Empréstimos</a></li>
-
-             <li>
-               <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
-                 {% csrf_token %}
-                 <button type="submit" class="btn btn-link">Logout</button>
-               </form>
-             </li>
-           {% else %}
-             <li><a href="{% url 'login' %}?next={{ request.path }}">Login</a></li>
-           {% endif %}
-            …
-          </ul>
-
-          {% if user.is_staff %}
-         <hr>
-         <ul class="sidebar-nav">
-         <li>Bibliotecários</li>
-         <li><a href="{% url 'todos-emprestimos' %}">Todos Empréstimos</a></li>
-         {% if perms.acervo.add_genero %}
-           <li><a href="{% url 'adicionar-genero' %}">Adicionar Gênero</a></li>
-         {% endif %}
-         {% if perms.acervo.add_lingua %}
-           <li><a href="{% url 'adicionar-lingua' %}">Adicionar Língua</a></li>
-         {% endif %}
-         {% if perms.acervo.add_autor %}
-           <li><a href="{% url 'adicionar-autor' %}">Adicionar Autor</a></li>
-         {% endif %}
-         {% if perms.acervo.add_livro %}
-           <li><a href="{% url 'adicionar-livro' %}">Adicionar Livro</a></li>
-         {% endif %}
-         {% if perms.acervo.add_livrocopia %}
-           <li><a href="{% url 'adicionar-copia' %}">Adicionar Cópia de Livro</a></li>
-         {% endif %}
-         </ul>
-         {% endif %}
-
-          {% endblock %}
-        </div>
-        <div class="col-sm-10 ">{% block content %}{% endblock %}</div>
-      </div>
-    </div>
-  </body>
+    <div class="sidebar-bottom"><span class="avatar" aria-hidden="true">{% if user.is_authenticated %}{{ user.get_username|first|upper }}{% else %}B{% endif %}</span><div>{% if user.is_authenticated %}<strong>{{ user.get_username }}</strong><small>Área da biblioteca</small>{% else %}<strong>Bem-vindo</strong><small>Explore nosso acervo</small>{% endif %}</div>{% if user.is_authenticated %}<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="text-button" type="submit">Sair</button></form>{% else %}<a href="{% url 'login' %}">Entrar</a>{% endif %}</div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span>Acervo &amp; descobertas</span><form action="{% url 'livros' %}" method="get" role="search"><label class="sr-only" for="busca-global">Buscar no catálogo</label><input id="busca-global" type="search" name="q" placeholder="Buscar título, autor ou ISBN…"><button type="submit" aria-label="Buscar">⌕</button></form><span class="topbar-tag">Biblioteca conectada</span></header>
+    <main id="conteudo" tabindex="-1">
+      {% if ambiente_demo %}<div class="notice demo-banner"><strong>AMBIENTE DE DEMONSTRAÇÃO</strong> · Dados e contas fictícios. Não cadastre informações reais aqui.</div>{% endif %}
+      {% if messages %}<div aria-live="polite">{% for message in messages %}<div class="notice {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+      {% block content %}{% endblock %}
+      {% if is_paginated %}<nav class="pagination" aria-label="Paginação">{% if page_obj.has_previous %}<a href="?{% for key,value in request.GET.items %}{% if key != 'page' %}{{ key|urlencode }}={{ value|urlencode }}&amp;{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">← Anterior</a>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?{% for key,value in request.GET.items %}{% if key != 'page' %}{{ key|urlencode }}={{ value|urlencode }}&amp;{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Próxima →</a>{% endif %}</nav>{% endif %}
+      <footer class="page-footer"><span>BibliotecaPI</span><span>Mais tempo para pessoas. Mais espaço para histórias.</span></footer>
+    </main>
+  </div>
+</body>
 </html>

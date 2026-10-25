@@ -1,13 +1,1 @@
-{% extends "base_generic.html" %}
-
-{% block content %}
-
-<form action="" method="post">
-    {% csrf_token %}
-    <table>
-    {{ form.as_table }}
-    </table>
-    <input type="submit" value="Submit">
-    
-</form>
-{% endblock %}
+{% extends "base_generic.html" %}{% block content %}<div class="page-heading"><div><p class="eyebrow">ORGANIZE SEU ACERVO</p><h1>{% if object %}Editar exemplar{% else %}Cadastrar exemplar{% endif %}</h1></div></div><form method="post" class="panel">{% csrf_token %}{{ form.as_p }}<button type="submit">Salvar exemplar</button> <a class="btn secondary" href="{% url 'livros' %}">Cancelar</a></form>{% endblock %}

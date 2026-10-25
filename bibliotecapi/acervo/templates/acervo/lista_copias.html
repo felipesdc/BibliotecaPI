@@ -1,16 +1,1 @@
-{% extends "base_generic.html" %}
-
-{% block content %}
-    <h1>Cópias de Livros na Biblioteca</h1>
-
-    <ul>
-      {% for copia in lista_copias %}
-      <li class="{% if copia.em_atraso %}text-danger{% endif %}">
-        <a href="{% url 'detalhe-copia' copia.pk %}">{{copia.livro.titulo}}</a> ({{ copia.data_devolucao }}) {% if user.is_staff %}- {{ copia.tomador }}{% endif %} {% if perms.acervo.marca_devolucao %}- <a href="{% url 'renovacao-emprestimo-bibliotecario' copia.id %}">Renovação</a>  {% endif %}
-      </li>
-      {% empty %}
-      <li>Não há cópias desse livro disponíveis.</li>
-      {% endfor %}
-    </ul>
-
-{% endblock %}
+{% extends "base_generic.html" %}{% block content %}<div class="page-heading"><div><p class="eyebrow">CADA LIVRO TEM SEU LUGAR</p><h1>Exemplares</h1><p>Disponibilidade e identificação dos livros físicos.</p></div>{% if perms.acervo.add_livrocopia %}<a class="btn" href="{% url 'adicionar-copia' %}">+ Cadastrar exemplar</a>{% endif %}</div><div class="table-wrap"><table><thead><tr><th>Livro</th><th>Código</th><th>Editora</th><th>Situação</th><th>Ação</th></tr></thead><tbody>{% for copia in lista_copias %}<tr><td><a href="{{ copia.livro.get_absolute_url }}">{{ copia.livro.titulo|default:"Livro não informado" }}</a></td><td><a href="{{ copia.get_absolute_url }}">{{ copia.codigo|default:copia.id }}</a></td><td>{{ copia.editora|default:"—" }}</td><td><span class="badge {% if copia.estado != 'd' %}warning{% endif %}">{{ copia.get_estado_display }}</span></td><td>{% if perms.acervo.marca_devolucao and copia.estado == 'd' %}<a href="{% url 'emprestar' copia.pk %}">Emprestar ↗</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="5">Nenhum exemplar cadastrado.</td></tr>{% endfor %}</tbody></table></div>{% endblock %}

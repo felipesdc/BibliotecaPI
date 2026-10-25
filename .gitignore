@@ -2,3 +2,10 @@
 .idea
 .env
 bibliotecapi/staticfiles
+.venv/
+*.pyc
+bibliotecapi/biblioteca.sqlite3*
+.DS_Store
+bibliotecapi/backups/
+dist/
+backups/

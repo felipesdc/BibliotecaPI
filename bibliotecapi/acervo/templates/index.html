@@ -1,22 +1,8 @@
 {% extends "base_generic.html" %}
-
 {% block content %}
-  <h1>SGB Home</h1>
-  <p>
-    Bem vindo ao Sistema Aberto para Gestão de Bibliotecas – SGB
-    <br>
-    <em>DRP14-Projeto Integrador em Computação I-Turma 005-Grupo 009</em>
-  </p>
-  <h2>Conteúdo dinâmico</h2>
-  <p>Esse sistema atualmente conta com:</p>
-  <ul>
-    <li><strong>Livros:</strong> {{ numero_de_livros }}</li>
-    <li><strong>Cópias:</strong> {{ numero_de_copias }}</li>
-    <li><strong>Cópias Disponíveis:</strong> {{ numero_de_copias_disponiveis }}</li>
-    <li><strong>Autores:</strong> {{ numero_de_autores }}</li>
-  </ul>
-
-  <p>
-    Você já visitou essa página {{ numero_de_visitas }} vez{{ numero_de_visitas|pluralize:"es" }}.
-  </p>
+<div class="page-heading"><div><p class="eyebrow">UM NOVO CAPÍTULO, TODOS OS DIAS</p><h1>Sua biblioteca, em movimento.</h1><p>Um olhar sobre o acervo e as histórias que estão circulando.</p></div>{% if perms.acervo.add_livro %}<a class="btn" href="{% url 'adicionar-livro' %}">+ Cadastrar livro</a>{% endif %}</div>
+<section class="hero" aria-label="Explore a biblioteca"><div class="hero-copy"><span class="eyebrow">CONHECIMENTO QUE CONECTA</span><h2>O próximo encontro<br>começa com um livro.</h2><p>Encontre uma nova leitura, consulte a disponibilidade e descubra o que faz parte do nosso acervo.</p><a class="btn" href="{% url 'livros' %}">Explorar catálogo <span aria-hidden="true">↗</span></a></div><div class="hero-art" aria-hidden="true"><span class="spine">Literatura</span><span class="spine">Novas histórias</span><span class="spine">Descobertas</span><span class="spine">Conhecimento</span></div></section>
+<section class="metrics" aria-label="Resumo do acervo"><div class="metric"><span class="metric-icon" aria-hidden="true">▤</span><span class="metric-label">Títulos no acervo</span><strong>{{ numero_de_livros }}</strong><small>{{ numero_de_copias }} exemplares cadastrados</small></div><div class="metric"><span class="metric-icon" aria-hidden="true">✓</span><span class="metric-label">Disponíveis</span><strong>{{ numero_de_copias_disponiveis }}</strong><small>Prontos para uma nova leitura</small></div><div class="metric"><span class="metric-icon" aria-hidden="true">↗</span><span class="metric-label">Em circulação</span><strong>{{ emprestados }}</strong><small>Empréstimos em andamento</small></div><div class="metric"><span class="metric-icon" aria-hidden="true">◷</span><span class="metric-label">Devoluções em atraso</span><strong>{{ atrasados }}</strong><small>{% if perms.acervo.marca_devolucao %}<a href="{% url 'todos-emprestimos' %}">Acompanhar empréstimos →</a>{% else %}Cuidando do ciclo de leitura{% endif %}</small></div></section>
+<div class="section-heading"><h2>Últimos títulos cadastrados</h2><a href="{% url 'livros' %}">Ver todo o catálogo →</a></div>
+<div class="book-grid">{% for livro in recentes %}<article class="book-card"><a class="book-cover" href="{{ livro.get_absolute_url }}" tabindex="-1" aria-hidden="true"><span class="mini-book">{{ livro.titulo|truncatechars:40 }}</span></a><div class="book-info"><h3><a href="{{ livro.get_absolute_url }}">{{ livro.titulo }}</a></h3><p>{{ livro.autor|default:"Autoria não informada" }}</p><span class="badge">No acervo</span></div></article>{% empty %}<div class="empty-state"><h2>Vamos abrir o primeiro capítulo?</h2><p>O catálogo ainda está vazio. Importe a planilha da biblioteca ou cadastre o primeiro livro para começar.</p>{% if perms.acervo.add_livro and perms.acervo.add_livrocopia %}<a class="btn" href="{% url 'importar-acervo' %}">Importar meu acervo →</a>{% else %}<a class="btn secondary" href="{% url 'login' %}">Entrar na biblioteca</a>{% endif %}</div>{% endfor %}</div>
 {% endblock %}

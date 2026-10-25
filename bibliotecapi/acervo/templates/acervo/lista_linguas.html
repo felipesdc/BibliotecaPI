@@ -1,17 +1,1 @@
-{% extends "base_generic.html" %}
-
-{% block content %}
-
-<h1>Lista de Línguas</h1>
-
-<ul>
-  {% for lingua in lista_linguas %}
-  <li>
-    <a href="{{ lingua.get_absolute_url }}">{{ lingua }}</a>
-  </li>
-  {% empty %}
-  <li>Não há línguas disponíveis.</li>
-  {% endfor %}
-</ul>
-
-{% endblock %}
+{% extends "base_generic.html" %}{% block content %}<div class="page-heading"><div><p class="eyebrow">ORGANIZE E DESCUBRA</p><h1>Idiomas</h1></div>{% if perms.acervo.add_lingua %}<a class="btn" href="{% url 'adicionar-lingua' %}">+ Cadastrar</a>{% endif %}</div><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Ações</th></tr></thead><tbody>{% for item in lista_linguas %}<tr><td><a href="{{ item.get_absolute_url }}">{{ item }}</a></td><td>{% if perms.acervo.change_lingua %}<a href="{% url 'alterar-lingua' item.pk %}">Editar</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="2">Nenhum cadastro encontrado.</td></tr>{% endfor %}</tbody></table></div>{% endblock %}

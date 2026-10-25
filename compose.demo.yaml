@@ -1,0 +1,34 @@
+# Instalação independente: porta, volume e projeto próprios.
+name: bibliotecapi-demo
+services:
+  app:
+    build: .
+    image: bibliotecapi:local
+    ports:
+      - "127.0.0.1:8001:8000"
+    environment:
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,[::1]"
+      DJANGO_SECRET_KEY_FILE: /data/secret_key
+      SQLITE_PATH: /data/biblioteca.sqlite3
+      BACKUP_DIR: /data/backups
+      BIBLIOTECA_DEMO: "True"
+    volumes:
+      - demonstracao_dados:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  demonstracao_dados:

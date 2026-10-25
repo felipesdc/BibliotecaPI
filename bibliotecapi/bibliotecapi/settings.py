@@ -21,20 +21,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Support env variables from .env file if defined
 
 from dotenv import load_dotenv
-env_path = load_dotenv(BASE_DIR / '.env')
-load_dotenv(env_path)
+load_dotenv(BASE_DIR / '.env')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'django-insecure-eiepdd0s*wu41ojc-da*=ai*4*(ceys028k=ki&uv8wl!0^(%g'
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'eiepdd0s*wu41ojc-da*=ai*4*(ceys028k=ki&uv8wl!0^(%g')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
-DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
-
-
-ALLOWED_HOSTS = ['*']
-
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
+_secret_file = os.environ.get('DJANGO_SECRET_KEY_FILE')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY and _secret_file:
+    SECRET_KEY = Path(_secret_file).read_text(encoding='utf-8').strip()
+SECRET_KEY = SECRET_KEY or 'local-only-change-before-deploy'
+if not DEBUG and SECRET_KEY == 'local-only-change-before-deploy':
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured('Defina DJANGO_SECRET_KEY para produção.')
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1],testserver').split(',')
 
 # Application definition
 
@@ -71,6 +69,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'acervo.context_processors.ambiente',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -85,17 +84,13 @@ WSGI_APPLICATION = 'bibliotecapi.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get("POSTGRES_DATABASE"),
-        'USER': os.environ.get("POSTGRES_USER"),
-        'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
-        'HOST': os.environ.get("POSTGRES_HOST"),
-        'PORT': os.environ.get("DB_PORT"),
-    }
-}
-
+# SQLite torna a instalação local independente de um servidor de banco.
+# Um arquivo separado preserva o db.sqlite3 original do projeto.
+DATABASES = {'default': {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': os.environ.get('SQLITE_PATH', BASE_DIR / 'biblioteca.sqlite3'),
+    'OPTIONS': {'timeout': 30, 'transaction_mode': 'IMMEDIATE'},
+}}
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -123,7 +118,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -139,6 +134,14 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
+
+LOGOUT_REDIRECT_URL = "/"
+DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+
+BACKUP_DIR = Path(os.environ.get('BACKUP_DIR', BASE_DIR / 'backups'))
+
+DEMO_MODE = os.environ.get('BIBLIOTECA_DEMO', 'False').lower() == 'true'

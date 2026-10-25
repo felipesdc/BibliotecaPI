@@ -1,43 +1,6 @@
-{% extends "base_generic.html" %}
-
-{% block content %}
-
-<h1>Titulo: {{ livro.titulo }}</h1>
-
-<p><strong>Autor:</strong> <a href="{{ livro.autor.get_absolute_url }}">{{ livro.autor }}</a></p>
-<p><strong>Descrição:</strong> {{ livro.descricao }}</p>
-<p><strong>ISBN:</strong> {{ livro.isbn }}</p>
-<p><strong>Língua:</strong> {{ livro.lingua }}</p>
-<p><strong>Gênero:</strong> {{ livro.genero.all|join:", " }}</p>
-
-<div style="margin-left:20px;margin-top:20px">
-<h4>Cópias</h4>
-
-{% for copia in livro.livrocopia_set.all %}
-  <hr>
-  <p class="{% if copia.estado == 'd' %}text-success{% elif copia.estado == 'm' %}text-danger{% else %}text-warning{% endif %}">{{ copia.get_estado_display }}</p>
-  {% if copia.estado != 'd' %}<p><strong>Prazo para retorno:</strong> {{copia.data_devolucao}}</p>{% endif %}
-  <p><strong>Editora:</strong> {{copia.editora}}</p>
-  <p class="text-muted"><strong>Id:</strong> <a href="{{ copia.get_absolute_url }}">{{copia.id}}</a></p>
-{% empty %}
-  <p>Essa biblioteca não dispõe de cópias desse livro.</p>
-{% endfor %}
-</div>
-{% endblock %}
-
-{% block sidebar %}
-  {{ block.super }}
-
-  {% if perms.acervo.change_livro or perms.acervo.delete_livro %}
-  <hr>
-  <ul class="sidebar-nav">
-    {% if perms.acervo.change_livro %}
-      <li><a href="{% url 'alterar-livro' livro.id %}">Alterar Livro</a></li>
-    {% endif %}
-    {% if not livro.livrocopia_set.all and perms.acervo.delete_livro %}
-      <li><a href="{% url 'excluir-livro' livro.id %}">Excluir Livro</a></li>
-    {% endif %}
-    </ul>
-  {% endif %}
-
+{% extends "base_generic.html" %}{% block content %}
+<div class="page-heading"><div><p class="eyebrow"><a href="{% url 'livros' %}">CATÁLOGO</a> / DETALHES DO LIVRO</p><h1>{{ livro.titulo }}</h1><p>{% if livro.autor %}<a href="{{ livro.autor.get_absolute_url }}">{{ livro.autor }}</a>{% else %}Autoria não informada{% endif %}</p></div><div class="actions">{% if perms.acervo.change_livro %}<a class="btn secondary" href="{% url 'alterar-livro' livro.pk %}">Editar livro</a>{% endif %}{% if perms.acervo.add_livrocopia %}<a class="btn" href="{% url 'adicionar-copia' %}?livro={{ livro.pk }}">+ Exemplar</a>{% endif %}</div></div>
+<div class="detail-grid"><section class="panel"><h2>Sobre esta obra</h2><p>{{ livro.descricao|default:"Ainda não há uma descrição cadastrada para este título."|linebreaksbr }}</p></section><section class="panel"><dl><dt>ISBN</dt><dd>{{ livro.isbn|default:"Não informado" }}</dd><dt>Idioma</dt><dd>{{ livro.lingua|default:"Não informado" }}</dd><dt>Gêneros</dt><dd>{{ livro.genero.all|join:", "|default:"Não informado" }}</dd></dl></section></div>
+<h2>Exemplares na biblioteca</h2><div class="table-wrap"><table><thead><tr><th>Código</th><th>Editora</th><th>Disponibilidade</th><th>Ação</th></tr></thead><tbody>{% for copia in livro.livrocopia_set.all %}<tr><td><a href="{{ copia.get_absolute_url }}">{{ copia.codigo|default:copia.id }}</a></td><td>{{ copia.editora|default:"—" }}</td><td><span class="badge {% if copia.estado != 'd' %}warning{% endif %}">{{ copia.get_estado_display }}</span>{% if copia.estado == 'e' and copia.data_devolucao %}<br><small>Retorno previsto: {{ copia.data_devolucao|date:"d/m/Y" }}</small>{% endif %}</td><td>{% if perms.acervo.marca_devolucao and copia.estado == 'd' %}<a class="btn secondary small" href="{% url 'emprestar' copia.pk %}">Emprestar ↗</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="4">Ainda não há exemplares deste título.</td></tr>{% endfor %}</tbody></table></div>
+{% if perms.acervo.delete_livro and not livro.livrocopia_set.all %}<p><a class="text-danger" href="{% url 'excluir-livro' livro.pk %}">Excluir este livro</a></p>{% endif %}
 {% endblock %}

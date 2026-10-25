@@ -19,8 +19,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
+from .health import health
 
 urlpatterns = [
+    path('health/', health, name='health'),
     path('acervo/', include('acervo.urls')),
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='/acervo/')),
