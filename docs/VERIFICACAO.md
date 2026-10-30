@@ -79,3 +79,20 @@ Critérios, acessos fictícios e reprodução: [relatórios e demonstração](RE
 - Ambos os ambientes usam SQLite em volumes distintos. A disponibilidade da planilha real não é pré-requisito desta entrega.
 
 Guia: [usuários e perfis](USUARIOS_E_PERFIS.md). As contas fictícias continuam restritas à demonstração local. Não houve teste em aparelho móvel nem ensaio de carga concorrente.
+
+## Ficha individual do leitor — 29/10/2026
+
+- Adicionada ficha em `/acervo/leitores/<id>/`, com contato, indicadores e histórico filtrado e paginado (20 registros).
+- Quatro novos testes com dados fictícios cobrem isolamento entre leitores, totais independentes do filtro, vencimento hoje, filtros, permissões, leitor inativo, ausência de registros, ID inexistente e paginação.
+- Suíte local completa: **65 testes aprovados** (`manage.py test acervo bibliotecapi`).
+- `manage.py check`, `makemigrations --check --dry-run` e `git diff --check` aprovados. Sem alteração de esquema ou novas dependências.
+- Esta etapa não incluiu nova verificação visual em navegador nem reconstrução da imagem Docker.
+
+## Regras de circulação — 29/10/2026
+
+- Configuração global persistida: prazo sugerido, limite por leitor e bloqueio opcional por atraso. Padrões preservam a operação anterior (14 dias, sem limite, sem bloqueio).
+- Migração `0010` adiciona configuração e concede permissão aos gestores existentes; novos gestores recebem a mesma permissão pelo configurador de grupos.
+- Serviço transacional valida leitor ativo, limite, atrasos (incluindo exemplares legados vinculados ao leitor) e disponibilidade antes de criar o histórico. A escrita inicial serializa operações SQLite antes da contagem.
+- Seis novos testes cobrem padrões, prazo sugerido, limite, ausência de gravação em rejeições, liberação após devolução, vencimento hoje, atraso legado, inatividade, manutenção, isolamento entre leitores, permissões e validação/persistência da configuração. Não foi executado teste de estresse concorrente.
+- **71 testes aprovados localmente e na imagem Docker**. `check`, `makemigrations --check --dry-run` e `git diff --check` aprovados.
+- Demonstração reconstruída e saudável em `http://localhost:8001`. Verificação pelo cliente Django no container: gestor acessa regras e ficha (200), atendente acessa ficha (200) e recebe 403 nas regras. Não houve nova inspeção visual em navegador.

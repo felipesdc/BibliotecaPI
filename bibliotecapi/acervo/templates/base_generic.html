@@ -29,6 +29,7 @@
       {% if perms.acervo.view_leitor %}<li><a href="{% url 'leitores' %}">♧ <span>Leitores</span></a></li>{% endif %}
       {% if perms.acervo.add_livro and perms.acervo.add_livrocopia and perms.acervo.add_autor and perms.acervo.add_genero and perms.acervo.add_lingua %}<li class="mobile-link"><a href="{% url 'importar-acervo' %}">↓ Importar planilha</a></li>{% endif %}
       {% if perms.acervo.manage_usuarios %}<li><a href="{% url 'usuarios' %}" {% if request.resolver_match.url_name == 'usuarios' %}aria-current="page"{% endif %}>♧ <span>Usuários e perfis</span></a></li>{% endif %}
+      {% if perms.acervo.change_politicacirculacao %}<li><a href="{% url 'politica-circulacao' %}">⚙ <span>Regras de circulação</span></a></li>{% endif %}
       <li><a href="{% url 'password_change' %}">⚿ <span>Alterar minha senha</span></a></li>
       <li><a href="{% url 'meus-emprestimos' %}">▱ <span>Meus empréstimos</span></a></li>
     </ul></nav>

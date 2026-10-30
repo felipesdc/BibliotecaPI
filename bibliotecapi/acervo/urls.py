@@ -84,6 +84,7 @@ urlpatterns += [
     path('modelo/', views.modelo_importacao, name='modelo-importacao'),
     path('exportar/', views.exportar_acervo, name='exportar-acervo'),
     path('leitores/', views.LeitoresView.as_view(), name='leitores'),
+    path('leitores/<int:pk>/', views.DetalheLeitorView.as_view(), name='detalhe-leitor'),
     path('leitores/adicionar/', views.AdicionarLeitor.as_view(), name='adicionar-leitor'),
     path('leitores/<int:pk>/alterar/', views.AlterarLeitor.as_view(), name='alterar-leitor'),
     path('copia/<uuid:pk>/emprestar/', views.emprestar, name='emprestar'),
@@ -102,3 +103,5 @@ urlpatterns += [
     path('usuarios/<int:pk>/reativar/', views_acessos.situacao_usuario, {'ativo': True}, name='reativar-usuario'),
     path('usuarios/<int:pk>/senha/', views_acessos.redefinir_senha, name='redefinir-senha-usuario'),
 ]
+
+urlpatterns += [path('regras-circulacao/', views.politica_circulacao, name='politica-circulacao')]

@@ -1,7 +1,7 @@
 import datetime
 
 from django import forms
-from .models import Leitor, LivroCopia
+from .models import Leitor, LivroCopia, PoliticaCirculacao
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -42,7 +42,8 @@ class EmprestarForm(forms.Form):
 
     def clean_prazo(self):
         prazo = self.cleaned_data['prazo']
-        if prazo < datetime.date.today():
+        from django.utils import timezone
+        if prazo < timezone.localdate():
             raise forms.ValidationError('Escolha hoje ou uma data futura.')
         return prazo
 
@@ -80,3 +81,21 @@ class PeriodoRelatorioForm(forms.Form):
             if fim > timezone.localdate():
                 raise forms.ValidationError('A data final não pode estar no futuro.')
         return dados
+
+
+class PoliticaCirculacaoForm(forms.ModelForm):
+    class Meta:
+        model = PoliticaCirculacao
+        fields = ['prazo_padrao', 'limite_emprestimos', 'bloquear_atrasados']
+
+    def clean_prazo_padrao(self):
+        valor = self.cleaned_data['prazo_padrao']
+        if not 1 <= valor <= 365:
+            raise forms.ValidationError('Informe um prazo entre 1 e 365 dias.')
+        return valor
+
+    def clean_limite_emprestimos(self):
+        valor = self.cleaned_data['limite_emprestimos']
+        if valor > 1000:
+            raise forms.ValidationError('Informe um limite entre 0 e 1000.')
+        return valor

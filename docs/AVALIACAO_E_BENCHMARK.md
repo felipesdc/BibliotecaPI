@@ -56,7 +56,7 @@ A inferência para o BibliotecaPI é manter um recorte pequeno desses fluxos: im
 3. **Sem sincronização bidirecional.** Reimportar preserva exemplares conhecidos; não atualiza metadados existentes. O Excel deixa de ser a fonte operacional após a conferência da migração.
 4. **Execução sem Docker e publicação.** A etapa posterior adicionou Gunicorn e persistência via Docker (ver `DOCKER.md`). Os iniciadores usam o servidor de desenvolvimento Django, limitado a `127.0.0.1`. Não são uma solução de hospedagem pública. Uso em rede exige servidor de aplicação, HTTPS, configuração de produção e rotina de backup. Vercel serverless requer banco persistente externo; não usar SQLite efêmero nesse ambiente.
 5. **Backups precisam sair do computador.** CSV é intercâmbio de acervo; não é cópia completa. O comando de backup inclui contas, leitores e histórico; armazenar cópias em local protegido e testar restauração.
-6. **Políticas ainda simples.** Prazo inicial de 14 dias; renovação entre hoje e 28 dias; sem limites de livros por leitor, multas, reservas funcionais, notificações e leitura de códigos de barras.
+6. **Políticas ainda simples.** Prazo inicial configurável (padrão de 14 dias), limite de exemplares por leitor e bloqueio opcional de novos empréstimos por atraso. Renovação entre hoje e 28 dias; sem multas, reservas funcionais, notificações e leitura de códigos de barras.
 7. **Validação humana necessária.** Interface conferida em Chrome desktop; a CSS inclui adaptação a telas menores, mas não houve teste em aparelho móvel nem ensaio com a equipe da biblioteca.
 
 ## Roteiro de homologação com a biblioteca

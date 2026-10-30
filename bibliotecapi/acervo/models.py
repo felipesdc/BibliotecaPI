@@ -215,3 +215,16 @@ class EventoAcesso(models.Model):
 
     class Meta:
         ordering = ['-criado_em', '-pk']
+
+
+class PoliticaCirculacao(models.Model):
+    prazo_padrao = models.PositiveSmallIntegerField('Prazo padrão em dias', default=14)
+    limite_emprestimos = models.PositiveSmallIntegerField('Limite de empréstimos por leitor', default=0, help_text='Zero significa sem limite.')
+    bloquear_atrasados = models.BooleanField('Bloquear novos empréstimos para leitores com atrasos', default=False)
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=models.Q(pk=1), name='politica_circulacao_unica')]
+
+    @classmethod
+    def atual(cls):
+        return cls.objects.filter(pk=1).first() or cls(pk=1)

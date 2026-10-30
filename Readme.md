@@ -70,6 +70,8 @@ Códigos já cadastrados são preservados e ignorados no reenvio. Sem código, o
 
 - **Leitores → Cadastrar leitor:** nome e, opcionalmente, contato. Leitores não precisam ter conta de acesso.
 - **Catálogo ou Exemplares → Emprestar:** escolha o leitor e o prazo. O padrão inicial é 14 dias.
+- **Leitores → Nome do leitor:** ficha com contato, totais, empréstimos em aberto, atrasos e histórico paginado. Filtre por situação e acesse o exemplar para atendimento. Disponível para gestor e atendente.
+- **Regras de circulação (gestor):** configure prazo sugerido, limite por leitor (zero = sem limite) e bloqueio opcional de novos empréstimos por atraso. A regra é aplicada no servidor e não altera empréstimos existentes.
 - **Empréstimos → Renovar:** escolha uma data entre hoje e 4 semanas.
 - **Empréstimos → Devolver:** o exemplar volta à disponibilidade; o histórico permanece.
 - **Histórico:** consulta das operações realizadas nesta ferramenta.

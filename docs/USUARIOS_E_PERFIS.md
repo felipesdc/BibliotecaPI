@@ -91,3 +91,21 @@ Em **http://localhost:8001**, use a senha fictícia `BibliotecaDemo2026!`:
 As contas de demonstração já têm senha de demonstração definitiva para permitir exploração imediata. Contas novas criadas pela tela exigem troca de senha normalmente. Na demonstração existente, executar a carga adiciona somente as novas contas que faltarem; mantém o acervo, os empréstimos, os perfis já alterados e as senhas existentes.
 
 O volume da demonstração é separado da instalação principal. Não são necessárias planilhas ou informações reais para reproduzir os testes.
+
+## Ficha individual do leitor
+
+Em **Leitores**, o nome abre contato e histórico individual, com filtros de empréstimos em aberto, atrasados e devolvidos. Os indicadores sempre incluem todo o histórico do leitor; vencimento hoje não é atraso. A tabela exibe 20 registros por página e oferece acesso ao exemplar. Leitores inativos conservam seu histórico.
+
+A página exige conjuntamente `acervo.view_leitor` e `acervo.marca_devolucao`, verificadas no servidor. Gestor e atendente possuem ambas; consulta interna e visitantes não acessam a ficha. Registros legados vinculados somente a uma conta de acesso não são associados por nome ou e-mail.
+
+## Regras de circulação
+
+O gestor acessa **Regras de circulação** (`acervo.change_politicacirculacao`). Atendentes e consulta interna não podem alterar as regras, nem enviando POST diretamente. A migração concede a permissão aos gestores já existentes.
+
+- Prazo sugerido: 1 a 365 dias; padrão de 14 dias. A equipe pode selecionar outra data futura no empréstimo.
+- Limite por leitor: 0 a 1000 exemplares em aberto; zero mantém a operação sem limite. Inclui exemplares legados vinculados ao leitor.
+- Bloqueio por atraso: opcional e inicialmente desligado; impede somente novos empréstimos quando o leitor possui exemplar com prazo anterior a hoje.
+
+As regras são globais, persistidas no SQLite e incluídas no backup completo. A alteração não modifica empréstimos existentes; renovação e devolução continuam disponíveis. Desativar o bloqueio ou aumentar o limite libera novas operações conforme a situação atual. Registros legados vinculados apenas a contas de acesso não são associados automaticamente a leitores.
+
+A gravação do empréstimo valida leitor ativo, limite, atrasos e disponibilidade dentro da transação. No SQLite, a escrita inicial serializa operações concorrentes antes da contagem.

@@ -1,0 +1,5 @@
+{% extends "base_generic.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">GESTÃO DA BIBLIOTECA</p><h1>Regras de circulação</h1><p>Defina as condições para novos empréstimos.</p></div></div>
+<form method="post" class="panel">{% csrf_token %}{{ form.as_p }}<p class="helptext">O prazo padrão é uma sugestão no formulário; a equipe pode escolher outra data futura. O limite considera exemplares atualmente emprestados ao leitor, incluindo atrasados. Vencimento hoje não é atraso.</p><p class="helptext">Alterar estas regras não muda prazos ou encerra empréstimos existentes. Renovação e devolução continuam disponíveis pelas regras atuais.</p><button type="submit">Salvar regras</button></form>
+{% endblock %}

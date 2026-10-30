@@ -349,6 +349,40 @@ class LeitoresView(PermissionRequiredMixin, generic.ListView):
         return Leitor.objects.filter(nome__icontains=self.request.GET.get('q', '').strip())
 
 
+class DetalheLeitorView(PermissionRequiredMixin, generic.ListView):
+    permission_required = ('acervo.view_leitor', 'acervo.marca_devolucao')
+    template_name = 'acervo/leitor_detalhe.html'
+    paginate_by = 20
+
+    def get_queryset(self):
+        self.leitor = get_object_or_404(Leitor, pk=self.kwargs['pk'])
+        self.situacao = self.request.GET.get('situacao', '')
+        if self.situacao not in ('abertos', 'atrasados', 'devolvidos'):
+            self.situacao = ''
+        registros = Emprestimo.objects.filter(leitor=self.leitor).select_related('copia__livro', 'realizado_por')
+        if self.situacao == 'devolvidos':
+            registros = registros.filter(devolvido_em__isnull=False)
+        elif self.situacao in ('abertos', 'atrasados'):
+            registros = registros.filter(devolvido_em__isnull=True)
+            if self.situacao == 'atrasados':
+                registros = registros.filter(prazo__lt=timezone.localdate())
+        return registros.order_by('-criado_em', '-pk')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        hoje = timezone.localdate()
+        context.update(
+            leitor=self.leitor, situacao=self.situacao, hoje=hoje,
+            resumo=Emprestimo.objects.filter(leitor=self.leitor).aggregate(
+                total=Count('pk'),
+                abertos=Count('pk', filter=Q(devolvido_em__isnull=True)),
+                atrasados=Count('pk', filter=Q(devolvido_em__isnull=True, prazo__lt=hoje)),
+                devolvidos=Count('pk', filter=Q(devolvido_em__isnull=False)),
+            ),
+        )
+        return context
+
+
 class AdicionarLeitor(PermissionRequiredMixin, CreateView):
     model = Leitor
     fields = ['nome', 'email', 'telefone']
@@ -367,17 +401,33 @@ class AlterarLeitor(PermissionRequiredMixin, UpdateView):
 @permission_required('acervo.marca_devolucao', raise_exception=True)
 def emprestar(request, pk):
     copia = get_object_or_404(LivroCopia.objects.select_related('livro'), pk=pk)
-    form = EmprestarForm(request.POST or None, initial={'prazo': timezone.localdate() + datetime.timedelta(days=14)})
+    from django.core.exceptions import ValidationError
+    from .circulacao import registrar_emprestimo
+    from .models import PoliticaCirculacao
+    politica = PoliticaCirculacao.atual()
+    form = EmprestarForm(request.POST if request.method == 'POST' else None, initial={'prazo': timezone.localdate() + datetime.timedelta(days=politica.prazo_padrao)})
     if request.method == 'POST' and form.is_valid():
-        with transaction.atomic():
-            # A atualização condicional também evita empréstimo duplicado em SQLite.
-            alteradas = LivroCopia.objects.filter(pk=pk, estado='d').update(estado='e', leitor=form.cleaned_data['leitor'], tomador=None, data_devolucao=form.cleaned_data['prazo'])
-            if alteradas:
-                Emprestimo.objects.create(copia=copia, leitor=form.cleaned_data['leitor'], realizado_por=request.user, prazo=form.cleaned_data['prazo'])
-                messages.success(request, 'Empréstimo registrado.')
-                return redirect('todos-emprestimos')
-            form.add_error(None, 'Este exemplar não está disponível para empréstimo.')
-    return render(request, 'acervo/emprestar.html', {'form': form, 'copia': copia})
+        try:
+            registrar_emprestimo(copia=copia, leitor=form.cleaned_data['leitor'], prazo=form.cleaned_data['prazo'], operador=request.user)
+        except ValidationError as exc:
+            form.add_error(None, exc)
+        else:
+            messages.success(request, 'Empréstimo registrado.')
+            return redirect('todos-emprestimos')
+    return render(request, 'acervo/emprestar.html', {'form': form, 'copia': copia, 'politica': politica})
+
+
+@login_required
+@permission_required('acervo.change_politicacirculacao', raise_exception=True)
+def politica_circulacao(request):
+    from .forms import PoliticaCirculacaoForm
+    from .models import PoliticaCirculacao
+    form = PoliticaCirculacaoForm(request.POST if request.method == 'POST' else None, instance=PoliticaCirculacao.atual())
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Regras de circulação atualizadas.')
+        return redirect('politica-circulacao')
+    return render(request, 'acervo/politica_circulacao.html', {'form': form})
 
 
 @login_required
