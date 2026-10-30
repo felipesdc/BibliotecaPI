@@ -176,6 +176,6 @@ class CargaDemonstracaoTests(TestCase):
         self.assertEqual(r['estoque']['atrasados'],9)
         call_command('carregar_demonstracao',stdout=io.StringIO())
         self.assertEqual(Emprestimo.objects.count(),210)
-        self.assertEqual(get_user_model().objects.count(),2)
+        self.assertEqual(get_user_model().objects.count(),4)
         self.client.force_login(gestor)
         self.assertEqual(self.client.get(reverse('relatorios')).status_code,200)

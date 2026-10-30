@@ -2,11 +2,11 @@ from datetime import date, datetime, time, timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
+from acervo.acessos import configurar_grupos, criar_usuario
 from acervo.models import Autor, Emprestimo, Genero, Importacao, Leitor, Lingua, Livro, LivroCopia
 
 MARCADOR = '[DEMO v1] acervo fictício'
@@ -20,8 +20,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if not settings.DEMO_MODE:
             raise CommandError('Carga recusada: use o Compose de demonstração, com BIBLIOTECA_DEMO=True.')
+        configurar_grupos()
         if Importacao.objects.filter(nome=MARCADOR, concluida=True).exists():
-            self.stdout.write('Demonstração já carregada. Nenhum dado foi alterado.')
+            self.complementar_contas()
+            self.stdout.write('Demonstração já carregada. Acervo e senhas existentes foram preservados.')
             return
         modelos = [Autor, Genero, Lingua, Livro, LivroCopia, Leitor, Emprestimo, Importacao, get_user_model()]
         if any(modelo.objects.exists() for modelo in modelos):
@@ -32,14 +34,8 @@ class Command(BaseCommand):
         def instante(dia):
             return timezone.make_aware(datetime.combine(dia, time(10)), zona)
 
-        gestores, _ = Group.objects.get_or_create(name='Gestores da demonstração')
-        gestores.permissions.set(Permission.objects.filter(content_type__app_label='acervo'))
-        atendentes, _ = Group.objects.get_or_create(name='Atendentes da demonstração')
-        atendentes.permissions.set(Permission.objects.filter(content_type__app_label='acervo', codename__in=['view_livro', 'view_livrocopia', 'view_autor', 'view_genero', 'view_lingua', 'view_leitor', 'add_leitor', 'change_leitor', 'marca_devolucao']))
-        gestor = get_user_model().objects.create_user('gestor_demo', password=SENHA_DEMO, first_name='Gestão', last_name='Demonstração', email='gestor@example.invalid', is_staff=True)
-        gestor.groups.add(gestores)
-        atendente = get_user_model().objects.create_user('atendente_demo', password=SENHA_DEMO, first_name='Atendimento', last_name='Demonstração', email='atendente@example.invalid')
-        atendente.groups.add(atendentes)
+        gestor = criar_usuario(None, username='gestor_demo', papel='gestor', senha=SENHA_DEMO, exigir_troca=False, first_name='Gestão', last_name='Demonstração', email='gestor@example.invalid')
+        atendente = criar_usuario(gestor, username='atendente_demo', papel='atendente', senha=SENHA_DEMO, exigir_troca=False, first_name='Atendimento', last_name='Demonstração', email='atendente@example.invalid')
         generos = [Genero.objects.create(nome=nome) for nome in ['Ficção', 'Literatura brasileira', 'Infantojuvenil', 'Ciência e tecnologia', 'História', 'Artes']]
         linguas = [Lingua.objects.create(nome=nome) for nome in ['Português', 'Inglês', 'Espanhol']]
         nomes = [('Helena', 'Campos'), ('Miguel', 'Serra'), ('Lia', 'Vales'), ('Rafael', 'Pontes'), ('Sofia', 'Monte'), ('Caio', 'Ventura'), ('Clara', 'Luz'), ('Davi', 'Rios')]
@@ -84,5 +80,12 @@ class Command(BaseCommand):
             copia.save()
         Importacao.objects.create(criado_por=gestor, nome=MARCADOR, dados={'versao': 1, 'data_referencia': hoje.isoformat(), 'ficticio': True}, resultado={'criadas': len(copias), 'ignoradas': 0}, concluida=True)
         Importacao.objects.create(criado_por=gestor, nome='[DEMO] exemplo-pendente.csv', dados={'tabelas': {'Acervo': {'cabecalho': ['Código', 'Título', 'Autor'], 'linhas': [{'numero': 2, 'valores': ['DEMO-EXTRA', 'Novo título fictício', 'Helena Campos']}]}}}, concluida=False)
+        self.complementar_contas()
         self.stdout.write(self.style.SUCCESS(f'Demonstração criada: {Livro.objects.count()} títulos, {len(copias)} exemplares, {len(leitores)} leitores e {Emprestimo.objects.count()} empréstimos.'))
         self.stdout.write('Acesso gestor: gestor_demo | Acesso atendente: atendente_demo | Senha fictícia de ambos: ' + SENHA_DEMO)
+
+    def complementar_contas(self):
+        gestor = get_user_model().objects.get(username='gestor_demo')
+        for username, papel, ativo in [('consulta_demo', 'consulta', True), ('inativo_demo', 'atendente', False)]:
+            if not get_user_model().objects.filter(username=username).exists():
+                criar_usuario(gestor, username=username, papel=papel, senha=SENHA_DEMO, exigir_troca=False, ativo=ativo, first_name='Conta fictícia', last_name=username, email=username+'@example.invalid')

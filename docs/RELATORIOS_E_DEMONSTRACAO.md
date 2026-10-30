@@ -30,7 +30,7 @@ A tela mostra até 10 títulos, leitores, atrasos e próximos vencimentos. Os CS
 
 A tela e todas as exportações exigem `acervo.view_relatorios`. Esconder o menu não é a única proteção: a permissão também é conferida na requisição ao servidor.
 
-No piloto atual, o grupo **Bibliotecários** já possui amplos poderes de gestão. A migration concede a ele a nova permissão; usuários comuns não a recebem. Novas contas criadas por `preparar_biblioteca` também recebem as permissões desse grupo. Para separar administradores e atendentes na instalação real, gerencie grupos pelo Django Admin; o comando de preparação reaplica todas as permissões de acervo ao grupo Bibliotecários.
+O perfil **Gestor** possui a permissão dos relatórios. Atendente e consulta interna não a recebem. A migração dos grupos antigos preserva senhas e converte contas comuns conhecidas para os perfis atuais; contas técnicas ficam protegidas. Veja a [matriz de acesso](USUARIOS_E_PERFIS.md).
 
 ## Ambiente de demonstração separado
 
@@ -47,6 +47,8 @@ Abra **http://localhost:8001/acervo/relatorios/** e entre com:
 | --- | --- | --- |
 | Gestor | `gestor_demo` | `BibliotecaDemo2026!` |
 | Atendente | `atendente_demo` | `BibliotecaDemo2026!` |
+| Consulta interna | `consulta_demo` | `BibliotecaDemo2026!` |
+| Inativa | `inativo_demo` | `BibliotecaDemo2026!` |
 
 O gestor acessa os relatórios; o atendente opera a circulação e os leitores, mas não acessa os relatórios. Não use essas credenciais na instalação real. Um aviso visível identifica o ambiente fictício em todas as telas.
 
@@ -62,11 +64,11 @@ O ambiente tem projeto `bibliotecapi-demo`, porta 8001 e volume `bibliotecapi-de
 - 210 registros de empréstimo: 192 devolvidos e 18 abertos, distribuídos por aproximadamente seis meses. Na data da carga, 9 empréstimos estão atrasados.
 - Um empréstimo aberto usa o vínculo legado com a conta do atendente, permitindo demonstrar “Meus empréstimos”.
 - Uma importação concluída e outra pendente, com dados de exemplo para associação de colunas.
-- Duas contas de acesso e seus grupos de permissões.
+- Quatro contas de acesso, seus perfis, grupos de permissões e eventos de gestão. A conta inativa não autentica.
 
 A data de referência acompanha o dia da primeira carga, no fuso de São Paulo. Os atrasos evoluem conforme os dias passam. O filtro padrão de 180 dias pode excluir alguns registros mais antigos; para reconciliar os 210 empréstimos, escolha um período que cubra toda a carga, como os últimos 365 dias.
 
-O comando exige `BIBLIOTECA_DEMO=True` e recusa bancos com dados existentes. Executá-lo novamente após uma carga concluída não duplica nem sobrescreve os dados. Ele não apaga a demonstração nem serve para restaurar alterações manuais.
+O comando exige `BIBLIOTECA_DEMO=True` e recusa bancos com dados existentes. Executá-lo novamente após uma carga concluída mantém os dados e as senhas existentes; adiciona as contas de consulta e inativa caso ainda não existam. Ele não apaga a demonstração nem serve para restaurar alterações manuais.
 
 Reservados representam somente o estado do exemplar já suportado pelo modelo; a carga não implementa fila ou processo de reservas. As sessões e os registros internos do Django são criados pelo uso normal da aplicação, sem simular históricos de autenticação.
 

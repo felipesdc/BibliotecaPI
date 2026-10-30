@@ -20,6 +20,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 from .health import health
+from acervo.views_acessos import AlterarMinhaSenha
 
 urlpatterns = [
     path('health/', health, name='health'),
@@ -30,5 +31,6 @@ urlpatterns = [
 
 # Adição da autenticação Django
 urlpatterns += [
+    path('accounts/password_change/', AlterarMinhaSenha.as_view(), name='password_change'),
     path('accounts/', include('django.contrib.auth.urls')),
 ]

@@ -75,11 +75,13 @@ Códigos já cadastrados são preservados e ignorados no reenvio. Sem código, o
 - **Histórico:** consulta das operações realizadas nesta ferramenta.
 - **Catálogo → Exportar acervo:** download CSV dos exemplares. Não inclui contatos de leitores.
 
-Para criar mais uma conta da equipe, execute novamente `preparar_biblioteca`. Para administração avançada, use `manage.py createsuperuser`; a equipe comum opera pela interface principal.
+O primeiro gestor usa o comando `preparar_biblioteca`. Depois, as contas da equipe são criadas e administradas em **Usuários e perfis**, com perfis de gestor, atendente e consulta interna. Contas novas recebem senha temporária e devem trocá-la ao entrar. Para administração técnica, `manage.py createsuperuser` continua disponível; o gestor comum não é superusuário.
+
+[Gestão de usuários, matriz de permissões e recuperação de acesso](docs/USUARIOS_E_PERFIS.md).
 
 ## Relatórios gerenciais e demonstração
 
-O menu **Relatórios gerenciais** reúne situação do acervo, circulação mensal, atrasos, próximos vencimentos, títulos mais emprestados, atividade dos leitores e importações. Há filtro de período, exportações CSV e impressão. O acesso exige permissão específica; a equipe Bibliotecários do piloto recebe essa permissão na atualização.
+O menu **Relatórios gerenciais** reúne situação do acervo, circulação mensal, atrasos, próximos vencimentos, títulos mais emprestados, atividade dos leitores e importações. Há filtro de período, exportações CSV e impressão. O acesso exige permissão específica; o perfil Gestor recebe essa permissão.
 
 Para explorar dados fictícios sem misturar com a biblioteca, use a demonstração em **http://localhost:8001**:
 
@@ -88,7 +90,7 @@ docker compose -f compose.demo.yaml up -d --build --wait
 docker compose -f compose.demo.yaml exec app python manage.py carregar_demonstracao
 ```
 
-Acesse como `gestor_demo`, com a senha fictícia `BibliotecaDemo2026!`. A carga cria todas as estruturas de negócio, incluindo 24 títulos, 72 exemplares, 30 leitores e 210 empréstimos. A instalação principal permanece no seu volume e na porta 8000.
+Acesse como `gestor_demo`, com a senha fictícia `BibliotecaDemo2026!`. A carga cria todas as estruturas de negócio, incluindo 24 títulos, 72 exemplares, 30 leitores, 210 empréstimos e quatro contas: `gestor_demo`, `atendente_demo`, `consulta_demo` e `inativo_demo`. Todas usam a senha fictícia acima; a conta inativa não permite login. A instalação principal permanece no seu volume e na porta 8000.
 
 [Critérios dos relatórios, contas e dados da demonstração](docs/RELATORIOS_E_DEMONSTRACAO.md).
 
@@ -121,3 +123,5 @@ O arquivo `requirements.txt` é a fonte de dependências desta versão; Pipfile 
 ```
 
 [Leia a avaliação, o benchmark e os limites do piloto](docs/AVALIACAO_E_BENCHMARK.md). [Evidências da verificação](docs/VERIFICACAO.md).
+
+O desenvolvimento atual é validado com dados fictícios; o acesso à planilha da biblioteca deixou de estar disponível. A carga de demonstração permite reproduzir os fluxos e os testes sem dados reais.

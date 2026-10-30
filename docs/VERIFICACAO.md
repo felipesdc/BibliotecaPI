@@ -62,3 +62,20 @@ Procedimentos atuais: [guia Docker](DOCKER.md). Esta etapa substitui a opção a
 - Nenhuma migration pendente de geração, e `git diff --check` sem problemas.
 
 Critérios, acessos fictícios e reprodução: [relatórios e demonstração](RELATORIOS_E_DEMONSTRACAO.md). A conferência visual foi feita no desktop; não houve teste em celular físico nem teste de carga.
+
+## Gestão de usuários e perfis — 28/10/2026
+
+- **61 testes locais aprovados**, incluindo os 39 anteriores e 22 testes de gestão de acessos. A suíte também é executada na imagem Docker final.
+- Matriz de gestor, atendente e consulta validada no servidor, incluindo bloqueios de gestão, relatórios, dados de leitores e exportação do acervo.
+- Cadastro com senha temporária, validação de senha, hash, troca obrigatória e preservação da sessão atual após a troca.
+- Desativação/reativação sem recuperar sessões antigas; mudanças de perfil encerram os acessos anteriores na próxima requisição.
+- Proteção de contas técnicas, do próprio perfil e do último gestor ativo; versão de conta evita sobrescritas por formulários antigos.
+- Simulada alteração de cadastro ou desativação durante uma troca de senha: a operação rejeitou os dados antigos, sem reativar a conta nem sobrescrever o cadastro.
+- Histórico de contas conferido sem senhas em seus dados; não há exclusão de usuários na interface.
+- Migração dos grupos conhecidos preserva o hash de senha, registros de negócio e contas técnicas. As contagens do banco principal foram comparadas antes e depois da atualização, sem diferenças em livros, exemplares, leitores, empréstimos, importações e usuários.
+- Demonstração complementada com `consulta_demo` e `inativo_demo`, mantendo os dados e senhas fictícios anteriores.
+- HTTP real com autenticação e CSRF: gestor acessa a lista e o formulário de contas; atendente e consulta são bloqueados com 403; a conta inativa não autentica. A alteração da própria senha está acessível aos três perfis ativos.
+- No Chrome desktop, conferidos o novo menu, os perfis, a lista de quatro contas e o formulário de cadastro. Criações, redefinições e alterações de acesso foram verificadas pela suíte automatizada; não foram cadastradas contas reais na conferência visual.
+- Ambos os ambientes usam SQLite em volumes distintos. A disponibilidade da planilha real não é pré-requisito desta entrega.
+
+Guia: [usuários e perfis](USUARIOS_E_PERFIS.md). As contas fictícias continuam restritas à demonstração local. Não houve teste em aparelho móvel nem ensaio de carga concorrente.

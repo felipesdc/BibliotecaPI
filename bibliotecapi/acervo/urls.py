@@ -92,3 +92,13 @@ urlpatterns += [
 ]
 
 urlpatterns += [path('relatorios/', views_relatorios.relatorios, name='relatorios')]
+
+from . import views_acessos
+urlpatterns += [
+    path('usuarios/', views_acessos.usuarios, name='usuarios'),
+    path('usuarios/criar/', views_acessos.criar_usuario, name='criar-usuario'),
+    path('usuarios/<int:pk>/', views_acessos.editar_usuario, name='editar-usuario'),
+    path('usuarios/<int:pk>/desativar/', views_acessos.situacao_usuario, {'ativo': False}, name='desativar-usuario'),
+    path('usuarios/<int:pk>/reativar/', views_acessos.situacao_usuario, {'ativo': True}, name='reativar-usuario'),
+    path('usuarios/<int:pk>/senha/', views_acessos.redefinir_senha, name='redefinir-senha-usuario'),
+]

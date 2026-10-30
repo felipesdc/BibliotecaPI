@@ -466,7 +466,7 @@ def celula_csv(valor):
 
 
 @login_required
-@permission_required('acervo.view_livrocopia', raise_exception=True)
+@permission_required('acervo.export_acervo', raise_exception=True)
 def exportar_acervo(request):
     resposta = HttpResponse(content_type='text/csv; charset=utf-8')
     resposta['Content-Disposition'] = 'attachment; filename="acervo.csv"'

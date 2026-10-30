@@ -122,7 +122,7 @@ class LivroCopia(models.Model):
 
     class Meta:
         ordering = ['data_devolucao']
-        permissions = (("marca_devolucao", "Marca o livro como devolvido"),)
+        permissions = (("marca_devolucao", "Marca o livro como devolvido"), ("export_acervo", "Pode exportar o acervo"))
 
     def get_absolute_url(self):
         """Retorna a URL para uma cópia de livro em particular."""
@@ -189,3 +189,29 @@ class Importacao(models.Model):
     dados = models.JSONField(default=dict)
     resultado = models.JSONField(default=dict)
     concluida = models.BooleanField(default=False)
+
+
+class PerfilAcesso(models.Model):
+    class Papel(models.TextChoices):
+        GESTOR = 'gestor', 'Gestor'
+        ATENDENTE = 'atendente', 'Atendente'
+        CONSULTA = 'consulta', 'Consulta interna'
+
+    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil_biblioteca')
+    papel = models.CharField(max_length=20, choices=Papel.choices)
+    exigir_troca_senha = models.BooleanField(default=False)
+    versao_sessao = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        permissions = [('manage_usuarios', 'Pode gerenciar usuários da biblioteca')]
+
+
+class EventoAcesso(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='eventos_acesso')
+    realizado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='gestao_acessos')
+    acao = models.CharField(max_length=40, choices=[('criado', 'Conta criada'), ('editado', 'Cadastro atualizado'), ('perfil_alterado', 'Perfil alterado'), ('desativado', 'Conta desativada'), ('reativado', 'Conta reativada'), ('senha_redefinida', 'Senha temporária definida'), ('senha_alterada', 'Senha alterada pelo usuário'), ('migrado', 'Perfil migrado')])
+    criado_em = models.DateTimeField(auto_now_add=True)
+    detalhes = models.JSONField(default=dict)
+
+    class Meta:
+        ordering = ['-criado_em', '-pk']
