@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 class RenovacaoEmprestimoForm(forms.Form):
-    data_renovacao = forms.DateField(help_text="Insira uma data entre hoje e daqui a 4 semanas (padrão 3).")
+    data_renovacao = forms.DateField(label='Novo prazo', help_text="Insira uma data entre hoje e daqui a 4 semanas (padrão 3).", widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}))
 
     def clean_data_renovacao(self):
         data = self.cleaned_data['data_renovacao']
@@ -99,3 +99,27 @@ class PoliticaCirculacaoForm(forms.ModelForm):
         if valor > 1000:
             raise forms.ValidationError('Informe um limite entre 0 e 1000.')
         return valor
+
+
+class FiltroEmprestimosForm(forms.Form):
+    q = forms.CharField(label='Leitor, título ou código', required=False, max_length=100,
+                        widget=forms.TextInput(attrs={'type': 'search', 'placeholder': 'Nome, número do leitor, título, código ou ISBN'}))
+    situacao = forms.ChoiceField(label='Situação', required=False, choices=[
+        ('', 'Todos em aberto'), ('atrasados', 'Em atraso'), ('hoje', 'Vencem hoje'),
+        ('semana', 'Próximos 7 dias'), ('sem_prazo', 'Sem prazo informado')])
+    vencimento_de = forms.DateField(label='Vencimento a partir de', required=False,
+                                   widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}))
+    vencimento_ate = forms.DateField(label='Vencimento até', required=False,
+                                    widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}))
+    ordem = forms.ChoiceField(label='Ordenar por', required=False, choices=[
+        ('', 'Prazo mais próximo'), ('prazo_desc', 'Prazo mais distante'),
+        ('titulo', 'Título do livro'), ('leitor', 'Nome do leitor')])
+
+    def clean(self):
+        dados = super().clean()
+        inicio, fim = dados.get('vencimento_de'), dados.get('vencimento_ate')
+        if inicio and fim and inicio > fim:
+            self.add_error('vencimento_ate', 'A data final deve ser igual ou posterior à data inicial.')
+        if dados.get('situacao') == 'sem_prazo' and (inicio or fim):
+            raise forms.ValidationError('Retire as datas para buscar empréstimos sem prazo informado.')
+        return dados

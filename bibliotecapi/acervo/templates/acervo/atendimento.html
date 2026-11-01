@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
 {% block content %}
 <div class="page-heading"><div><p class="eyebrow">CIRCULAÇÃO NO BALCÃO</p><h1>Central de atendimento</h1><p>Encontre o leitor, confira as pendências e atenda os exemplares nesta tela.</p></div></div>
-{% if form.errors %}<div class="notice error" role="alert"><strong>Não foi possível concluir a operação.</strong>{{ form.non_field_errors }}{% for field in form %}{% for error in field.errors %}<p>{{ field.label }}: {{ error }}</p>{% endfor %}{% endfor %}<p>Confira os dados abaixo antes de tentar novamente.</p></div>{% endif %}
+{% if form.errors %}<div class="notice error" role="alert" tabindex="-1" data-foco-erros><strong>Não foi possível concluir a operação.</strong>{{ form.non_field_errors }}{% for field in form %}{% for error in field.errors %}<p>{{ field.label }}: {{ error }}</p>{% endfor %}{% endfor %}<p>Confira os dados abaixo antes de tentar novamente.</p></div>{% endif %}
 <div class="atendimento-grid">
 <section class="panel" aria-labelledby="titulo-leitor">
 <h2 id="titulo-leitor">1. Identifique o leitor</h2>

@@ -1,0 +1,4 @@
+<section class="error-summary notice error" role="alert" aria-labelledby="titulo-erros" tabindex="-1" data-foco-erros>
+<h2 id="titulo-erros">Revise os dados para continuar</h2><p>Corrija os itens abaixo. Os campos preenchidos foram mantidos quando possível.</p>
+<ul>{% for erro in form.non_field_errors %}<li>{{ erro }}</li>{% endfor %}{% for campo in form %}{% for erro in campo.errors %}<li>{% if campo.is_hidden %}{{ erro }}{% else %}<a href="#{{ campo.id_for_label }}">{{ campo.label }}: {{ erro }}</a>{% endif %}</li>{% endfor %}{% endfor %}</ul>
+</section>

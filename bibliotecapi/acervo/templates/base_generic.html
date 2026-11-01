@@ -3,36 +3,39 @@
 <head>
   {% load static %}
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  {% block title %}<title>BibliotecaPI · Acervo e circulação</title>{% endblock %}
+  {% block title %}<title>{{ nav_titulo|default:"Acervo e circulação" }} · BibliotecaPI</title>{% endblock %}
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231b5149'/%3E%3Ctext x='14' y='46' font-size='43' fill='%23fff'%3EB%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <script src="{% static 'js/interface.js' %}" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
   <aside class="sidebar">
-    <a class="brand" href="{% url 'index' %}"><span class="brand-mark" aria-hidden="true">B<span>↗</span></span><span>Biblioteca<span class="brand-pi">PI</span><small>HISTÓRIAS EM CIRCULAÇÃO</small></span></a>
+    <div class="sidebar-heading"><a class="brand" href="{% url 'index' %}"><span class="brand-mark" aria-hidden="true">B<span>↗</span></span><span>Biblioteca<span class="brand-pi">PI</span><small>HISTÓRIAS EM CIRCULAÇÃO</small></span></a>
+    <button type="button" id="alternar-menu" class="nav-toggle" aria-controls="menu-biblioteca" aria-expanded="true" hidden>Menu</button></div>
+    <div id="menu-biblioteca" class="sidebar-menu">
     {% block sidebar %}
     <p class="nav-label">BIBLIOTECA</p>
     <nav aria-label="Navegação principal"><ul class="sidebar-nav">
-      <li><a href="{% url 'index' %}" {% if request.resolver_match.url_name == 'index' %}aria-current="page"{% endif %}><span aria-hidden="true">◫</span> Visão geral</a></li>
-      <li><a href="{% url 'livros' %}" {% if request.resolver_match.url_name == 'livros' %}aria-current="page"{% endif %}><span aria-hidden="true">▤</span> Catálogo de livros</a></li>
-      <li><a href="{% url 'copias' %}" {% if request.resolver_match.url_name == 'copias' %}aria-current="page"{% endif %}><span aria-hidden="true">▥</span> Exemplares</a></li>
-      <li><a href="{% url 'autores' %}"><span aria-hidden="true">✎</span> Autores</a></li>
-      <li><a href="{% url 'generos' %}"><span aria-hidden="true">◇</span> Gêneros</a></li>
-      <li><a href="{% url 'linguas' %}"><span aria-hidden="true">◎</span> Idiomas</a></li>
+      <li><a href="{% url 'index' %}" {% if nav_secao == 'index' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">◫</span> Visão geral</a></li>
+      <li><a href="{% url 'livros' %}" {% if nav_secao == 'livros' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">▤</span> Catálogo de livros</a></li>
+      <li><a href="{% url 'copias' %}" {% if nav_secao == 'copias' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">▥</span> Exemplares</a></li>
+      <li><a href="{% url 'autores' %}" {% if nav_secao == 'autores' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">✎</span> Autores</a></li>
+      <li><a href="{% url 'generos' %}" {% if nav_secao == 'generos' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">◇</span> Gêneros</a></li>
+      <li><a href="{% url 'linguas' %}" {% if nav_secao == 'linguas' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">◎</span> Idiomas</a></li>
     </ul></nav>
     {% if user.is_authenticated %}
     <p class="nav-label">CIRCULAÇÃO</p>
     <nav aria-label="Circulação"><ul class="sidebar-nav">
-      {% if perms.acervo.view_leitor and perms.acervo.marca_devolucao %}<li><a href="{% url 'atendimento' %}" {% if request.resolver_match.url_name == 'atendimento' %}aria-current="page"{% endif %}>↔ <span>Central de atendimento</span></a></li>{% endif %}
-      {% if perms.acervo.marca_devolucao %}<li><a href="{% url 'todos-emprestimos' %}">↗ <span>Empréstimos</span></a></li><li><a href="{% url 'historico' %}">◷ <span>Histórico</span></a></li>{% endif %}
-      {% if perms.acervo.view_relatorios %}<li><a href="{% url 'relatorios' %}" {% if request.resolver_match.url_name == 'relatorios' %}aria-current="page"{% endif %}>◫ <span>Relatórios gerenciais</span></a></li>{% endif %}
-      {% if perms.acervo.view_leitor %}<li><a href="{% url 'leitores' %}">♧ <span>Leitores</span></a></li>{% endif %}
-      {% if perms.acervo.add_livro and perms.acervo.add_livrocopia and perms.acervo.add_autor and perms.acervo.add_genero and perms.acervo.add_lingua %}<li class="mobile-link"><a href="{% url 'importar-acervo' %}">↓ Importar planilha</a></li>{% endif %}
-      {% if perms.acervo.manage_usuarios %}<li><a href="{% url 'usuarios' %}" {% if request.resolver_match.url_name == 'usuarios' %}aria-current="page"{% endif %}>♧ <span>Usuários e perfis</span></a></li>{% endif %}
-      {% if perms.acervo.change_politicacirculacao %}<li><a href="{% url 'politica-circulacao' %}">⚙ <span>Regras de circulação</span></a></li>{% endif %}
-      <li><a href="{% url 'password_change' %}">⚿ <span>Alterar minha senha</span></a></li>
-      <li><a href="{% url 'meus-emprestimos' %}">▱ <span>Meus empréstimos</span></a></li>
+      {% if perms.acervo.view_leitor and perms.acervo.marca_devolucao %}<li><a href="{% url 'atendimento' %}" {% if nav_secao == 'atendimento' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">↔</span> <span>Central de atendimento</span></a></li>{% endif %}
+      {% if perms.acervo.marca_devolucao %}<li><a href="{% url 'todos-emprestimos' %}" {% if nav_secao == 'todos-emprestimos' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">↗</span> <span>Empréstimos</span></a></li><li><a href="{% url 'historico' %}" {% if nav_secao == 'historico' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">◷</span> <span>Histórico</span></a></li>{% endif %}
+      {% if perms.acervo.view_relatorios %}<li><a href="{% url 'relatorios' %}" {% if nav_secao == 'relatorios' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">◫</span> <span>Relatórios gerenciais</span></a></li>{% endif %}
+      {% if perms.acervo.view_leitor %}<li><a href="{% url 'leitores' %}" {% if nav_secao == 'leitores' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">♧</span> <span>Leitores</span></a></li>{% endif %}
+      {% if perms.acervo.add_livro and perms.acervo.add_livrocopia and perms.acervo.add_autor and perms.acervo.add_genero and perms.acervo.add_lingua %}<li><a href="{% url 'importar-acervo' %}" {% if nav_secao == 'importar-acervo' %}aria-current="{{ nav_estado }}"{% endif %}>↓ Importar planilha</a></li>{% endif %}
+      {% if perms.acervo.manage_usuarios %}<li><a href="{% url 'usuarios' %}" {% if nav_secao == 'usuarios' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">♧</span> <span>Usuários e perfis</span></a></li>{% endif %}
+      {% if perms.acervo.change_politicacirculacao %}<li><a href="{% url 'politica-circulacao' %}" {% if nav_secao == 'politica-circulacao' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">⚙</span> <span>Regras de circulação</span></a></li>{% endif %}
+      <li><a href="{% url 'password_change' %}" {% if nav_secao == 'password_change' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">⚿</span> <span>Alterar minha senha</span></a></li>
+      <li><a href="{% url 'meus-emprestimos' %}" {% if nav_secao == 'meus-emprestimos' %}aria-current="{{ nav_estado }}"{% endif %}><span aria-hidden="true">▱</span> <span>Meus empréstimos</span></a></li>
     </ul></nav>
     {% if perms.acervo.add_livro and perms.acervo.add_livrocopia and perms.acervo.add_autor and perms.acervo.add_genero and perms.acervo.add_lingua %}
     <div class="import-callout"><span class="nav-label">DO EXCEL PARA A BIBLIOTECA</span><p>Seu acervo, em um só lugar.</p><a href="{% url 'importar-acervo' %}">Importar planilha <span aria-hidden="true">↗</span></a></div>
@@ -40,12 +43,15 @@
     {% endif %}
     {% endblock %}
     <div class="sidebar-bottom"><span class="avatar" aria-hidden="true">{% if user.is_authenticated %}{{ user.get_username|first|upper }}{% else %}B{% endif %}</span><div>{% if user.is_authenticated %}<strong>{{ user.get_username }}</strong><small>Área da biblioteca</small>{% else %}<strong>Bem-vindo</strong><small>Explore nosso acervo</small>{% endif %}</div>{% if user.is_authenticated %}<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="text-button" type="submit">Sair</button></form>{% else %}<a href="{% url 'login' %}">Entrar</a>{% endif %}</div>
+    </div>
   </aside>
   <div class="workspace">
-    <header class="topbar"><span>Acervo &amp; descobertas</span><form action="{% url 'livros' %}" method="get" role="search"><label class="sr-only" for="busca-global">Buscar no catálogo</label><input id="busca-global" type="search" name="q" placeholder="Buscar título, autor ou ISBN…"><button type="submit" aria-label="Buscar">⌕</button></form><span class="topbar-tag">Biblioteca conectada</span></header>
+    <header class="topbar"><span>{{ nav_titulo }}</span><form action="{% url 'livros' %}" method="get" role="search"><label class="sr-only" for="busca-global">Buscar no catálogo</label><input id="busca-global" type="search" name="q" placeholder="Buscar título, autor ou ISBN…"><button type="submit" aria-label="Buscar">⌕</button></form><span class="topbar-tag">Biblioteca conectada</span></header>
     <main id="conteudo" tabindex="-1">
       {% if ambiente_demo %}<div class="notice demo-banner"><strong>AMBIENTE DE DEMONSTRAÇÃO</strong> · Dados e contas fictícios. Não cadastre informações reais aqui.</div>{% endif %}
       {% if messages %}<div aria-live="polite">{% for message in messages %}<div class="notice {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+      {% if resultado_circulacao %}{% include 'acervo/resultado_circulacao.html' %}{% endif %}
+      {% if form.errors and nav_secao != 'atendimento' %}{% include 'acervo/resumo_erros.html' %}{% endif %}
       {% block content %}{% endblock %}
       {% if is_paginated %}<nav class="pagination" aria-label="Paginação">{% if page_obj.has_previous %}<a href="?{% for key,value in request.GET.items %}{% if key != 'page' %}{{ key|urlencode }}={{ value|urlencode }}&amp;{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">← Anterior</a>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?{% for key,value in request.GET.items %}{% if key != 'page' %}{{ key|urlencode }}={{ value|urlencode }}&amp;{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Próxima →</a>{% endif %}</nav>{% endif %}
       <footer class="page-footer"><span>BibliotecaPI</span><span>Mais tempo para pessoas. Mais espaço para histórias.</span></footer>

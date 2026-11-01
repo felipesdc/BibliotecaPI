@@ -106,3 +106,43 @@ Guia: [usuários e perfis](USUARIOS_E_PERFIS.md). As contas fictícias continuam
 - Oito novos testes com dados fictícios cobrem buscas, seleção, ciclo completo e feedback, bloqueios, datas inválidas, isolamento, estado desatualizado, empréstimo legado, leitor inativo, permissões, CSRF, IDs inválidos, limites de resultados e expiração de confirmação.
 - **79 testes aprovados localmente e na imagem Docker**. `check`, `makemigrations --check --dry-run` e `git diff --check` aprovados. Sem nova migração ou dependência.
 - Demonstração reconstruída e saudável na porta 8001. Revisão em Chrome desktop com `atendente_demo`: login, pesquisa e seleção de leitor, resumo de pendências, pesquisa de exemplares e formulários de atendimento. As gravações completas foram verificadas nos testes, sem alterar os empréstimos fictícios pela interface. Layout móvel não foi testado em aparelho físico.
+
+## Painel inicial por perfil — 01/11/2026
+
+- Visão geral adaptada às permissões efetivas: atendimento com prioridades e acesso à central; gestão com movimento mensal, acervo e leitores ativos; consulta/visitantes com descoberta do catálogo.
+- Até cinco prioridades, com ordenação estável por prazo e identificador, carregando livro/leitor/conta em uma consulta. Dados individuais não são consultados nem enviados ao template sem ambas as permissões de atendimento.
+- Indicadores usam a data local: atraso anterior a hoje, vencimento hoje separado e aviso para empréstimos sem prazo. A propriedade de atraso do exemplar também passou a usar a data local para manter consistência.
+- Cartões de atraso e vencimento abrem a lista filtrada; também há filtro para empréstimos sem prazo. Paginação preserva os parâmetros pelo template compartilhado.
+- Seis novos testes fictícios cobrem atendimento, gestão e movimento mensal com empréstimos anteriores, consulta/visitantes, permissões personalizadas e superusuário, limite/ordenação/estado vazio das prioridades e filtros de destino protegidos.
+- **85 testes aprovados localmente e na imagem Docker**. Verificações Django e ausência de migrações pendentes aprovadas; `git diff --check` sem erros. Sem novas dependências ou mudanças de esquema.
+- Demonstração reconstruída e saudável em `http://localhost:8001`. Painel do atendente revisado visualmente no Chrome desktop. Gestão e consulta verificadas nos testes automatizados; sem teste em aparelho móvel físico.
+
+## Filtros de empréstimos e continuidade do atendimento — 01/11/2026
+
+- Busca por nome/número do leitor, título, código, ISBN e nomes de contas legadas, combinada com situação, período de vencimento inclusivo e ordenação por prazo/título/leitor.
+- Acrescentada situação de próximos sete dias (amanhã até hoje + 7). Exemplares sem prazo ficam por último ao ordenar por prazo e recebem indicação específica na tabela.
+- Formulário valida datas, período invertido, busca de até 100 caracteres, ordenação permitida e combinação incompatível de datas com “sem prazo”. Filtros inválidos não produzem resultados parciais.
+- Total e intervalo exibidos; estados vazios orientam a refinar/limpar a busca. Paginação mantém todos os parâmetros e se ajusta quando a página deixa de existir após uma operação.
+- Renovação e devolução retornam à lista filtrada; somente o caminho interno exato da lista é aceito como destino. Renovação recebeu formulário visual consistente e seletor de data.
+- Sete novos testes fictícios cobrem buscas, legado, situações e datas limítrofes, combinação/validação, ordenação, paginação e redução de resultados, retorno após operações, rejeição de destinos externos, permissões e ausência de gravações em GET.
+- **92 testes aprovados localmente e na imagem Docker**. `check`, `makemigrations --check --dry-run` e `git diff --check` aprovados. Sem migração nova ou dependência.
+- Demonstração reconstruída na porta 8001; formulário, busca por leitor e contagem conferidos visualmente no Chrome desktop. Não houve validação em aparelho móvel físico.
+
+## Resumo visual das operações — 01/11/2026
+
+- Cartão compartilhado pela central e pelas telas de circulação após empréstimo, renovação e devolução bem-sucedidos, com livro, exemplar, leitor, prazo, data/hora e operador.
+- Na devolução, preserva identificação e prazo anterior; informa a disponibilidade. Renovação usa o exemplar retornado pelo serviço, refletindo a operação efetiva.
+- Resumo temporário na sessão, vinculado à conta e ao destino, consumido uma vez em GET e com expiração de dez minutos. Não é um comprovante permanente; histórico continua sendo a fonte persistente. Permissões dos atalhos verificadas no template, sem ampliar acesso às rotas.
+- Sete novos testes fictícios cobrem conteúdo/atalhos, novo prazo, identificação na devolução, repetição/erros sem falso sucesso, destino/expiração/isolamento, contas legadas, escape HTML e integração com a central.
+- Verificação no Chrome desktop: empréstimo e devolução de `DEMO-001-1` para a leitora fictícia Ana, com conta `atendente_demo`. Ambos os cartões apareceram; o exemplar voltou à disponibilidade e a operação fechada permanece no histórico da demonstração. A instalação principal não foi alterada. Não houve teste em aparelho móvel físico.
+- **99 testes aprovados localmente e na imagem Docker final**. `check`, `makemigrations --check --dry-run` e `git diff --check` aprovados. Sem novas dependências ou migrações.
+
+## Navegação e acessibilidade — 01/11/2026
+
+- Seção atual indicada por rota nas listas e telas filhas: `aria-current="page"` na lista e `location` nos detalhes/edição. Título da aba e texto do cabeçalho identificam a seção. Ícones decorativos ficam ocultos de leitores de tela.
+- Menu compacto abaixo de 761 px, com botão, `aria-controls`, estado expandido, fechamento por Escape e retorno de foco. Ao redimensionar, o foco não permanece em item oculto. Sem JavaScript, o menu continua visível. O link de importação também está disponível na navegação desktop.
+- Foco visível, controles com altura mínima de 44 px, ajustes de contraste e legibilidade. Razões calculadas contra branco para as cores revisadas: texto secundário 4,85:1; rótulos 5,70:1; bordas 3,59:1; foco azul 6,58:1. Esses cálculos são pontuais e não constituem auditoria integral de contraste.
+- Resumo de erros com links aos campos em formulários e filtros; foco automático no resumo. A central mantém seu próprio resumo com o mesmo comportamento. Tabelas com overflow horizontal ganham região rotulada e foco para navegação por teclado.
+- Cinco novos testes verificam seção atual em listas/detalhes/edição, estrutura acessível e fallback sem JS, links do resumo/identificação de campos inválidos, foco único em filtros/central, títulos e preservação das restrições dos menus.
+- **104 testes aprovados localmente e na imagem Docker**. Sintaxe de `interface.js` validada com `node --check`. Verificações Django, ausência de migrações pendentes e `git diff --check` aprovadas. Sem nova dependência ou alteração de esquema.
+- Revisão manual no Chrome: emulação responsiva de **390 px**, abrir menu e fechar por Escape com foco no botão; retorno à visualização desktop; navegação a filtro inválido com foco automático no resumo de erros. Navegador devolvido ao modo desktop. Sem ensaio em dispositivo físico, leitor de tela ou auditoria completa de acessibilidade.

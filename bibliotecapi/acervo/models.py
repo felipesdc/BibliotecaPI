@@ -1,7 +1,7 @@
 from django.db import models
 
 import uuid  # Required for unique book instances
-from datetime import date
+from django.utils import timezone
 
 from django.conf import settings  # Required to assign User as a borrower
 from django.urls import reverse  # To generate URLS by reversing URL patterns
@@ -104,7 +104,7 @@ class LivroCopia(models.Model):
     @property
     def em_atraso(self):
         """Determina se o empréstimo está em atraso com base na data_devolucao e data atual."""
-        return bool(self.estado == 'e' and self.data_devolucao and date.today() > self.data_devolucao)
+        return bool(self.estado == 'e' and self.data_devolucao and timezone.localdate() > self.data_devolucao)
 
     ESTADOS_EMPRESTIMO = (
         ('m', 'Manutenção'),

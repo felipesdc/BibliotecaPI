@@ -1,0 +1,28 @@
+<div class="page-heading"><div><p class="eyebrow">{% if painel_gestao %}GESTÃO DA BIBLIOTECA{% else %}ATENDIMENTO NO BALCÃO{% endif %} · {{ hoje|date:'d/m/Y' }}</p><h1>{% if painel_gestao %}Sua biblioteca, em perspectiva.{% else %}Vamos atender a próxima leitura?{% endif %}</h1><p>{% if painel_gestao %}Acompanhe a circulação e identifique o que precisa de atenção.{% else %}Confira as prioridades e continue o atendimento em uma só tela.{% endif %}</p></div>{% if painel_atendimento %}<a class="btn" href="{% url 'atendimento' %}">Abrir central de atendimento →</a>{% elif painel_gestao %}<a class="btn" href="{% url 'relatorios' %}">Abrir relatórios →</a>{% endif %}</div>
+<section class="metrics" aria-label="Prioridades de circulação">
+<article class="metric"><span class="metric-label">Devoluções em atraso</span><strong class="{% if estoque.atrasados %}text-danger{% endif %}">{{ estoque.atrasados }}</strong><small>{% if perms.acervo.marca_devolucao %}<a href="{% url 'todos-emprestimos' %}?situacao=atrasados">Conferir atrasos →</a>{% else %}Prazo anterior a hoje{% endif %}</small></article>
+<article class="metric"><span class="metric-label">Vencem hoje</span><strong>{{ estoque.vencem_hoje }}</strong><small>{% if perms.acervo.marca_devolucao %}<a href="{% url 'todos-emprestimos' %}?situacao=hoje">Conferir vencimentos →</a>{% else %}Ainda dentro do prazo{% endif %}</small></article>
+{% if painel_gestao %}
+<article class="metric"><span class="metric-label">Empréstimos neste mês</span><strong>{{ movimento_mes.emprestimos }}</strong><small>Do dia 1 até hoje</small></article>
+<article class="metric"><span class="metric-label">Devoluções neste mês</span><strong>{{ movimento_mes.devolucoes }}</strong><small>Inclui empréstimos de meses anteriores</small></article>
+{% else %}
+<article class="metric"><span class="metric-label">Empréstimos em aberto</span><strong>{{ estoque.abertos }}</strong><small><a href="{% url 'todos-emprestimos' %}">Ver todos →</a></small></article>
+<article class="metric"><span class="metric-label">Exemplares disponíveis</span><strong>{{ numero_de_copias_disponiveis }}</strong><small><a href="{% url 'livros' %}?disponivel=1">Encontrar uma leitura →</a></small></article>
+{% endif %}
+</section>
+{% if painel_atendimento %}
+<section class="panel" aria-labelledby="prioridades-titulo"><div class="section-heading"><h2 id="prioridades-titulo">Prioridades do atendimento</h2><a href="{% url 'todos-emprestimos' %}">Ver todos os empréstimos →</a></div><p class="helptext">Até cinco exemplares atrasados ou com vencimento hoje, começando pelos prazos mais antigos.</p>
+<div class="table-wrap"><table><thead><tr><th>Livro / exemplar</th><th>Leitor</th><th>Prazo</th><th>Situação</th><th>Próximo passo</th></tr></thead><tbody>{% for copia in prioridades %}<tr><td>{{ copia.livro.titulo|default:'Sem título' }}<br>{{ copia.codigo }}</td><td>{{ copia.leitor|default:copia.tomador|default:'Não informado' }}</td><td>{{ copia.data_devolucao|date:'d/m/Y' }}</td><td><span class="badge {% if copia.em_atraso %}warning{% endif %}">{% if copia.em_atraso %}Em atraso{% else %}Vence hoje{% endif %}</span></td><td>{% if copia.leitor_id %}<a href="{% url 'atendimento' %}?leitor={{ copia.leitor_id }}">Atender leitor →</a>{% else %}<a href="{% url 'detalhe-copia' copia.pk %}">Conferir exemplar →</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="5">Nenhum atraso ou vencimento hoje. Abra a central para iniciar um atendimento.</td></tr>{% endfor %}</tbody></table></div>
+</section>
+{% endif %}
+{% if estoque.sem_prazo %}<div class="notice warning"><strong>{{ estoque.sem_prazo }} exemplar{{ estoque.sem_prazo|pluralize }} emprestado{{ estoque.sem_prazo|pluralize }} sem prazo informado.</strong> Confira os registros para acompanhar os vencimentos.{% if perms.acervo.marca_devolucao %} <a href="{% url 'todos-emprestimos' %}?situacao=sem_prazo">Conferir registros →</a>{% endif %}</div>{% endif %}
+{% if painel_gestao %}
+<section class="panel" aria-labelledby="acervo-titulo"><h2 id="acervo-titulo">Acervo e comunidade</h2><div class="state-summary"><div><strong>{{ numero_de_livros }}</strong><span>Títulos</span></div><div><strong>{{ numero_de_copias_disponiveis }}</strong><span>Exemplares disponíveis</span></div><div><strong>{{ estoque.abertos }}</strong><span>Emprestados</span></div><div><strong>{{ estoque.manutencao }}</strong><span>Em manutenção</span></div><div><strong>{{ leitores_ativos }}</strong><span>Leitores ativos</span></div></div><p class="helptext">Situação atual. Os indicadores mensais consideram somente operações registradas nesta ferramenta.</p></section>
+{% endif %}
+<section class="panel" aria-labelledby="atalhos-titulo"><h2 id="atalhos-titulo">Acessos rápidos</h2><div class="dashboard-shortcuts">
+{% if painel_atendimento %}<a class="btn" href="{% url 'atendimento' %}">Atender leitor</a>{% endif %}
+{% if perms.acervo.add_leitor %}<a class="btn secondary" href="{% url 'adicionar-leitor' %}">Cadastrar leitor</a>{% endif %}
+{% if painel_gestao %}<a class="btn secondary" href="{% url 'relatorios' %}">Relatórios gerenciais</a>{% endif %}
+{% if perms.acervo.change_politicacirculacao %}<a class="btn secondary" href="{% url 'politica-circulacao' %}">Regras de circulação</a>{% endif %}
+{% if perms.acervo.manage_usuarios %}<a class="btn secondary" href="{% url 'usuarios' %}">Usuários e perfis</a>{% endif %}
+<a class="btn secondary" href="{% url 'livros' %}">Explorar catálogo</a></div></section>

@@ -71,6 +71,8 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'acervo.context_processors.ambiente',
+                'acervo.context_processors.navegacao',
+                'acervo.feedback.resultado_circulacao',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],

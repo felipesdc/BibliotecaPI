@@ -68,14 +68,18 @@ Códigos já cadastrados são preservados e ignorados no reenvio. Sem código, o
 
 ## Operar a biblioteca
 
+A **Visão geral** se adapta às permissões: atendentes veem prioridades de circulação e acesso direto à central; gestores também acompanham empréstimos e devoluções do mês, acervo e leitores ativos. Atrasos e vencimentos de hoje levam à lista de empréstimos já filtrada. Visitantes e consulta interna continuam com a descoberta do catálogo, sem pendências ou dados individuais de leitores.
+
 A **Central de atendimento** reúne a operação de balcão em `/acervo/atendimento/`: busque um leitor pelo nome ou número, confira seus empréstimos e atrasos, encontre o exemplar por código, título ou ISBN e confirme empréstimo, renovação ou devolução na mesma tela. A busca não altera dados; cada operação exige confirmação por POST. Gestor e atendente têm acesso. Um leitor inativo pode devolver ou renovar, mas não receber novos empréstimos.
 
 - **Leitores → Cadastrar leitor:** nome e, opcionalmente, contato. Leitores não precisam ter conta de acesso.
 - **Catálogo ou Exemplares → Emprestar:** escolha o leitor e o prazo. O padrão inicial é 14 dias.
 - **Leitores → Nome do leitor:** ficha com contato, totais, empréstimos em aberto, atrasos e histórico paginado. Filtre por situação e acesse o exemplar para atendimento. Disponível para gestor e atendente.
 - **Regras de circulação (gestor):** configure prazo sugerido, limite por leitor (zero = sem limite) e bloqueio opcional de novos empréstimos por atraso. A regra é aplicada no servidor e não altera empréstimos existentes.
+- **Empréstimos → Filtros:** combine leitor (nome/número), título, código ou ISBN com situação e período de vencimento; ordene por prazo, título ou leitor. Busca e página são mantidas ao renovar ou devolver.
 - **Empréstimos → Renovar:** escolha uma data entre hoje e 4 semanas.
 - **Empréstimos → Devolver:** o exemplar volta à disponibilidade; o histórico permanece.
+- **Confirmação das operações:** empréstimo, renovação e devolução exibem resumo com livro, código, leitor, prazo e operador, mais atalhos para continuar com o mesmo leitor ou iniciar outro atendimento. O resumo é temporário; consulte o histórico para registros permanentes.
 - **Histórico:** consulta das operações realizadas nesta ferramenta.
 - **Catálogo → Exportar acervo:** download CSV dos exemplares. Não inclui contatos de leitores.
 
@@ -117,6 +121,12 @@ Uma referência de variáveis para execução sem Docker está em `bibliotecapi/
 Produção requer `DJANGO_DEBUG=False`, segredo próprio, hosts específicos, HTTPS, servidor WSGI/ASGI e armazenamento persistente. O Docker já usa Gunicorn e `DEBUG=False`; a publicação em rede ainda exige configuração de domínio e HTTPS. Os arquivos de publicação Vercel legados foram removidos. Nunca armazene o banco na camada descartável do container. A recuperação de senha por e-mail continua com backend de console; SMTP precisa ser configurado antes de oferecer esse recurso em produção.
 
 O arquivo `requirements.txt` é a fonte de dependências desta versão; Pipfile e lock antigos foram removidos para evitar instalações divergentes.
+
+## Navegação e acessibilidade
+
+O menu destaca a seção atual também nas telas de detalhe e edição. Em telas pequenas, use **Menu** para abrir a navegação; **Esc** fecha e devolve o foco ao botão. Sem JavaScript, os links permanecem visíveis. O primeiro link por teclado, **Ir para o conteúdo**, evita percorrer o menu a cada página.
+
+Formulários com erro exibem um resumo com links para os campos; tabelas largas recebem foco para rolagem por teclado. A interface inclui foco visível, bordas de campos mais contrastantes e áreas de toque ampliadas. Essas melhorias não substituem uma auditoria completa nem testes com leitores de tela.
 
 ## Verificação e diagnóstico
 

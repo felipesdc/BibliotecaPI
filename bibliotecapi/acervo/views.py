@@ -18,6 +18,7 @@ from django.db.models.deletion import RestrictedError, ProtectedError
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from . import importacao
+from .feedback import confirmar_operacao
 import csv
 
 from .models import Livro, Autor, LivroCopia, Genero, Lingua, Leitor, Emprestimo, Importacao
@@ -47,9 +48,11 @@ def index(request):
         'numero_de_generos': numero_de_generos,
         'numero_de_visitas': numero_de_visitas,
         'emprestados': LivroCopia.objects.filter(estado='e').count(),
-        'atrasados': LivroCopia.objects.filter(estado='e', data_devolucao__lt=timezone.localdate()).count(),
         'recentes': Livro.objects.select_related('autor').order_by('-pk')[:6],
     }
+
+    from .painel import contexto_painel
+    context.update(contexto_painel(request.user))
 
     # Render the HTML template index.html with the data in the context variable
     return render(request, 'index.html', context=context)
@@ -170,7 +173,75 @@ class TodosEmprestimosListView(PermissionRequiredMixin, generic.ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return LivroCopia.objects.filter(estado__exact='e').select_related('livro', 'leitor', 'tomador').order_by('data_devolucao', 'pk')
+        from django.db.models import F, Value
+        from django.db.models.functions import Coalesce
+        from .forms import FiltroEmprestimosForm
+        parametros = self.request.GET.copy()
+        situacoes = {valor for valor, _ in FiltroEmprestimosForm.base_fields['situacao'].choices}
+        if parametros.get('situacao', '') not in situacoes:
+            parametros['situacao'] = ''
+        self.filtros = FiltroEmprestimosForm(parametros)
+        copias = LivroCopia.objects.filter(estado='e').select_related('livro', 'leitor', 'tomador')
+        if not self.filtros.is_valid():
+            return copias.none()
+        dados = self.filtros.cleaned_data
+        busca = dados.get('q', '')
+        if busca:
+            filtro = (Q(livro__titulo__icontains=busca) | Q(codigo__icontains=busca) |
+                      Q(livro__isbn__icontains=busca) | Q(leitor__nome__icontains=busca) |
+                      Q(tomador__username__icontains=busca) | Q(tomador__first_name__icontains=busca) |
+                      Q(tomador__last_name__icontains=busca))
+            if busca.isdecimal() and len(busca) <= 18:
+                filtro |= Q(leitor_id=int(busca))
+            copias = copias.filter(filtro)
+        hoje = timezone.localdate()
+        situacao = dados.get('situacao', '')
+        if situacao == 'atrasados':
+            copias = copias.filter(data_devolucao__lt=hoje)
+        elif situacao == 'hoje':
+            copias = copias.filter(data_devolucao=hoje)
+        elif situacao == 'semana':
+            copias = copias.filter(data_devolucao__gt=hoje, data_devolucao__lte=hoje + datetime.timedelta(days=7))
+        elif situacao == 'sem_prazo':
+            copias = copias.filter(data_devolucao__isnull=True)
+        if dados.get('vencimento_de'):
+            copias = copias.filter(data_devolucao__gte=dados['vencimento_de'])
+        if dados.get('vencimento_ate'):
+            copias = copias.filter(data_devolucao__lte=dados['vencimento_ate'])
+        ordem = dados.get('ordem', '')
+        if ordem == 'titulo':
+            return copias.order_by(F('livro__titulo').asc(nulls_last=True), 'codigo', 'pk')
+        if ordem == 'leitor':
+            return copias.annotate(nome_atendimento=Coalesce('leitor__nome', 'tomador__username', Value(''))).order_by('nome_atendimento', 'pk')
+        prazo = F('data_devolucao').desc(nulls_last=True) if ordem == 'prazo_desc' else F('data_devolucao').asc(nulls_last=True)
+        return copias.order_by(prazo, 'pk')
+
+    def paginate_queryset(self, queryset, page_size):
+        paginator = self.get_paginator(queryset, page_size)
+        numero = self.request.GET.get('page', 1)
+        pagina = paginator.get_page(paginator.num_pages if numero == 'last' else numero)
+        return paginator, pagina, pagina.object_list, pagina.has_other_pages()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filtros'] = self.filtros
+        context['filtros_validos'] = not self.filtros.errors
+        context['tem_filtros'] = any(self.request.GET.get(campo) for campo in self.filtros.fields)
+        context['retorno'] = self.request.get_full_path()
+        return context
+
+
+def destino_circulacao(request):
+    from urllib.parse import urlsplit
+    padrao = reverse('todos-emprestimos')
+    destino = request.POST.get('retorno', request.GET.get('retorno', ''))
+    try:
+        partes = urlsplit(destino)
+    except ValueError:
+        return padrao
+    if partes.scheme or partes.netloc or partes.path != padrao or partes.fragment or any(c in destino for c in ('\\', '\r', '\n')):
+        return padrao
+    return destino
 
 
 @login_required
@@ -189,12 +260,12 @@ def renovacao_emprestimo_bibliotecario(request, pk):
             from django.core.exceptions import ValidationError
             from .circulacao import registrar_renovacao
             try:
-                registrar_renovacao(copia_id=pk, prazo=form.cleaned_data['data_renovacao'])
+                copia = registrar_renovacao(copia_id=pk, prazo=form.cleaned_data['data_renovacao'])
             except ValidationError as exc:
                 form.add_error(None, exc)
             else:
-                messages.success(request, 'Empréstimo renovado.')
-                return HttpResponseRedirect(reverse('todos-emprestimos'))
+                confirmar_operacao(request, acao='renovar', copia=copia, prazo=form.cleaned_data['data_renovacao'], destino='todos-emprestimos')
+                return HttpResponseRedirect(destino_circulacao(request))
 
     # If this is a GET (or any other method) create the default form.
     else:
@@ -204,6 +275,7 @@ def renovacao_emprestimo_bibliotecario(request, pk):
     context = {
         'form': form,
         'copia': copia,
+        'retorno': destino_circulacao(request),
     }
 
     return render(request, 'acervo/renovacao_emprestimo_bibliotecario.html', context)
@@ -408,7 +480,7 @@ def emprestar(request, pk):
         except ValidationError as exc:
             form.add_error(None, exc)
         else:
-            messages.success(request, 'Empréstimo registrado.')
+            confirmar_operacao(request, acao='emprestar', copia=copia, leitor=form.cleaned_data['leitor'], prazo=form.cleaned_data['prazo'], destino='todos-emprestimos')
             return redirect('todos-emprestimos')
     return render(request, 'acervo/emprestar.html', {'form': form, 'copia': copia, 'politica': politica})
 
@@ -431,15 +503,15 @@ def politica_circulacao(request):
 @require_POST
 def devolver(request, pk):
     from django.core.exceptions import ValidationError
-    from .circulacao import registrar_devolucao
-    get_object_or_404(LivroCopia, pk=pk)
+    from .circulacao import registrar_devolucao, retrato_emprestimo
+    copia = get_object_or_404(LivroCopia.objects.select_related('livro', 'leitor', 'tomador'), pk=pk)
     try:
-        registrar_devolucao(copia_id=pk, operador=request.user)
+        registrar_devolucao(copia_id=pk, operador=request.user, esperado=retrato_emprestimo(copia))
     except ValidationError as exc:
         messages.info(request, ' '.join(exc.messages))
     else:
-        messages.success(request, 'Devolução registrada. Exemplar disponível novamente.')
-    return redirect('todos-emprestimos')
+        confirmar_operacao(request, acao='devolver', copia=copia, destino='todos-emprestimos')
+    return redirect(destino_circulacao(request))
 
 
 class HistoricoView(PermissionRequiredMixin, generic.ListView):

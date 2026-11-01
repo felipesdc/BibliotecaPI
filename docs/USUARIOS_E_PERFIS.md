@@ -122,3 +122,33 @@ O menu **Central de atendimento** exige as duas permissões `acervo.view_leitor`
 Buscas exibem até 20 resultados e pedem refinamento quando há mais. Não há gravações por GET. Formulários incluem CSRF, validação de datas e mensagens com exemplar, leitor e resultado. As devoluções e renovações usam os serviços transacionais compartilhados com as telas anteriores.
 
 Uma confirmação assinada, com validade de uma hora, vincula renovação/devolução ao leitor e ao registro atual. Se o empréstimo mudar, for devolvido e reaberto ou a confirmação expirar, atualize o atendimento. Empréstimos legados associados a um leitor também podem ser atendidos; itens vinculados apenas a contas de acesso continuam nas telas anteriores.
+
+## Painel inicial por perfil
+
+A Visão geral usa permissões efetivas, incluindo contas técnicas e permissões personalizadas:
+
+- Com `view_leitor` e `marca_devolucao`, mostra o painel de atendimento: atrasos, vencimentos hoje, empréstimos em aberto, exemplares disponíveis e até cinco prioridades, ordenadas pelo prazo mais antigo. O atalho leva ao leitor na central ou ao exemplar quando não há leitor cadastrado.
+- Com `view_relatorios`, acrescenta a visão gerencial: empréstimos e devoluções do mês até hoje, situação do acervo e leitores ativos. Devoluções incluem empréstimos iniciados em meses anteriores. Sem as permissões de atendimento, nenhuma lista individual é consultada ou enviada ao template.
+- Visitantes e consulta interna recebem a página de descoberta do catálogo, sem dados operacionais individuais.
+
+Os números de situação atual usam os exemplares, incluindo empréstimos legados. O movimento mensal usa somente o histórico registrado na ferramenta. Vencimento hoje não é atraso; exemplares emprestados sem prazo aparecem em aviso separado. Os filtros de destino (atrasados, vencem hoje e sem prazo) continuam protegidos pela permissão de circulação.
+
+## Busca e filtros de empréstimos
+
+Em **Empréstimos**, combine busca por nome/número de leitor, título, código ou ISBN; contas legadas também podem ser encontradas por nome de acesso, nome ou sobrenome. Todos os resultados são exemplares atualmente emprestados e exigem `marca_devolucao`.
+
+- Situações: todos em aberto, atraso, vence hoje, próximos sete dias (amanhã até hoje + 7, inclusive) e sem prazo.
+- Período: uma ou ambas as datas de vencimento, inclusive. Data final anterior à inicial e combinação de datas com “sem prazo” exibem erro, sem resultados parciais.
+- Ordenação: prazo mais próximo/distante, título ou nome do leitor. Na ordenação por prazo, registros sem data ficam no fim.
+- Dez resultados por página; filtros e ordem permanecem durante a navegação. Quantidade total e intervalo visível aparecem antes da tabela.
+- Renovar, cancelar renovação ou devolver retorna à seleção anterior. Se uma operação remover a última linha de uma página, a lista se ajusta para a última página existente. Somente o caminho interno da lista de empréstimos é aceito como retorno.
+
+Filtros são consultas GET e não alteram o acervo. As confirmações continuam por POST com CSRF, usando os serviços de circulação existentes.
+
+## Retorno visual das operações
+
+Depois de confirmar um empréstimo, renovação ou devolução, a central e a lista de empréstimos exibem o mesmo cartão de sucesso: livro, código do exemplar, leitor, prazo, data/hora e operador. Na devolução, o prazo exibido é o anterior e a identificação do leitor permanece no resumo mesmo após a liberação do exemplar.
+
+Os atalhos permitem continuar com o mesmo leitor, atender outro ou consultar os empréstimos em aberto. Acesso à central continua exigindo ambas as permissões de atendimento; contas com somente `marca_devolucao` recebem o resumo sem esses atalhos. Contas legadas sem cadastro de leitor não oferecem o atalho para o mesmo leitor.
+
+O cartão é transitório, pertence à sessão e à conta que realizou a operação e aparece uma vez no destino do redirecionamento. Expira após dez minutos; atualizar a página não repete o cartão nem a operação. Apenas o resumo mais recente fica pendente por sessão, como os demais avisos transitórios. O histórico continua sendo o registro permanente. Erros de validação e operações recusadas não criam cartões de sucesso.

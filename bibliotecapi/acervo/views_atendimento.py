@@ -3,7 +3,6 @@ from datetime import timedelta
 from urllib.parse import urlencode
 
 from django import forms
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core import signing
 from django.core.exceptions import ValidationError
@@ -14,6 +13,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from .circulacao import registrar_emprestimo, registrar_devolucao, registrar_renovacao, retrato_emprestimo
+from .feedback import confirmar_operacao
 from .models import Emprestimo, Leitor, LivroCopia, PoliticaCirculacao
 
 SALT = 'acervo.atendimento.emprestimo'
@@ -55,7 +55,6 @@ def atendimento(request):
             try:
                 if dados['acao'] == 'emprestar':
                     registrar_emprestimo(copia=copia, leitor=leitor, prazo=dados['prazo'], operador=request.user)
-                    mensagem = f'Empréstimo confirmado: {copia.livro or "Sem título"} · {copia.codigo} para {leitor.nome}. Devolver até {dados["prazo"]:%d/%m/%Y}.'
                 else:
                     try:
                         esperado = signing.loads(dados['confirmacao'], salt=SALT, max_age=3600)
@@ -65,14 +64,14 @@ def atendimento(request):
                         raise ValidationError('O exemplar não pertence ao atendimento deste leitor.')
                     if dados['acao'] == 'devolver':
                         registrar_devolucao(copia_id=copia.pk, operador=request.user, esperado=esperado)
-                        mensagem = f'Devolução confirmada: {copia.livro or "Sem título"} · {copia.codigo}, de {leitor.nome}. Exemplar disponível novamente.'
                     else:
                         registrar_renovacao(copia_id=copia.pk, prazo=dados['prazo'], esperado=esperado)
-                        mensagem = f'Renovação confirmada: {copia.codigo}, de {leitor.nome}. Novo prazo: {dados["prazo"]:%d/%m/%Y}.'
             except ValidationError as exc:
                 form.add_error(None, exc)
             else:
-                messages.success(request, mensagem)
+                confirmar_operacao(request, acao=dados['acao'], copia=copia, leitor=leitor,
+                                   prazo=dados['prazo'] if dados['acao'] != 'devolver' else copia.data_devolucao,
+                                   destino='atendimento')
                 return redirect(reverse('atendimento') + '?' + urlencode({'leitor': leitor.pk, 'busca_exemplar': busca_exemplar}))
     leitores = Leitor.objects.none()
     if busca_leitor:
