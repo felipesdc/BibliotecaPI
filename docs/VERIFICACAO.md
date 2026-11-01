@@ -96,3 +96,13 @@ Guia: [usuários e perfis](USUARIOS_E_PERFIS.md). As contas fictícias continuam
 - Seis novos testes cobrem padrões, prazo sugerido, limite, ausência de gravação em rejeições, liberação após devolução, vencimento hoje, atraso legado, inatividade, manutenção, isolamento entre leitores, permissões e validação/persistência da configuração. Não foi executado teste de estresse concorrente.
 - **71 testes aprovados localmente e na imagem Docker**. `check`, `makemigrations --check --dry-run` e `git diff --check` aprovados.
 - Demonstração reconstruída e saudável em `http://localhost:8001`. Verificação pelo cliente Django no container: gestor acessa regras e ficha (200), atendente acessa ficha (200) e recebe 403 nas regras. Não houve nova inspeção visual em navegador.
+
+## Central de atendimento — 01/11/2026
+
+- Nova tela `/acervo/atendimento/`, com busca de leitor por nome/número, busca de exemplar por código/título/ISBN, resumo de pendências e empréstimo, renovação e devolução sem sair do atendimento.
+- Busca limitada a 20 resultados visíveis com indicação para refinar; nenhum GET altera registros de negócio. Seleção do leitor mantida após confirmação; datas preenchidas são preservadas em erros.
+- As regras de circulação permanecem no serviço de empréstimo. Renovação e devolução foram extraídas para serviços transacionais compartilhados com as telas anteriores.
+- Renovação/devolução na central exigem confirmação assinada com validade de uma hora, vinculada a exemplar, leitor, prazo e registro aberto. Impede aplicar uma confirmação antiga sobre empréstimo devolvido e reaberto.
+- Oito novos testes com dados fictícios cobrem buscas, seleção, ciclo completo e feedback, bloqueios, datas inválidas, isolamento, estado desatualizado, empréstimo legado, leitor inativo, permissões, CSRF, IDs inválidos, limites de resultados e expiração de confirmação.
+- **79 testes aprovados localmente e na imagem Docker**. `check`, `makemigrations --check --dry-run` e `git diff --check` aprovados. Sem nova migração ou dependência.
+- Demonstração reconstruída e saudável na porta 8001. Revisão em Chrome desktop com `atendente_demo`: login, pesquisa e seleção de leitor, resumo de pendências, pesquisa de exemplares e formulários de atendimento. As gravações completas foram verificadas nos testes, sem alterar os empréstimos fictícios pela interface. Layout móvel não foi testado em aparelho físico.

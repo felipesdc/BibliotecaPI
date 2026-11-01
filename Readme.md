@@ -68,6 +68,8 @@ Códigos já cadastrados são preservados e ignorados no reenvio. Sem código, o
 
 ## Operar a biblioteca
 
+A **Central de atendimento** reúne a operação de balcão em `/acervo/atendimento/`: busque um leitor pelo nome ou número, confira seus empréstimos e atrasos, encontre o exemplar por código, título ou ISBN e confirme empréstimo, renovação ou devolução na mesma tela. A busca não altera dados; cada operação exige confirmação por POST. Gestor e atendente têm acesso. Um leitor inativo pode devolver ou renovar, mas não receber novos empréstimos.
+
 - **Leitores → Cadastrar leitor:** nome e, opcionalmente, contato. Leitores não precisam ter conta de acesso.
 - **Catálogo ou Exemplares → Emprestar:** escolha o leitor e o prazo. O padrão inicial é 14 dias.
 - **Leitores → Nome do leitor:** ficha com contato, totais, empréstimos em aberto, atrasos e histórico paginado. Filtre por situação e acesse o exemplar para atendimento. Disponível para gestor e atendente.

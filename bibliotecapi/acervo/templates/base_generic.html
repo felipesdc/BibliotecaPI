@@ -24,6 +24,7 @@
     {% if user.is_authenticated %}
     <p class="nav-label">CIRCULAÇÃO</p>
     <nav aria-label="Circulação"><ul class="sidebar-nav">
+      {% if perms.acervo.view_leitor and perms.acervo.marca_devolucao %}<li><a href="{% url 'atendimento' %}" {% if request.resolver_match.url_name == 'atendimento' %}aria-current="page"{% endif %}>↔ <span>Central de atendimento</span></a></li>{% endif %}
       {% if perms.acervo.marca_devolucao %}<li><a href="{% url 'todos-emprestimos' %}">↗ <span>Empréstimos</span></a></li><li><a href="{% url 'historico' %}">◷ <span>Histórico</span></a></li>{% endif %}
       {% if perms.acervo.view_relatorios %}<li><a href="{% url 'relatorios' %}" {% if request.resolver_match.url_name == 'relatorios' %}aria-current="page"{% endif %}>◫ <span>Relatórios gerenciais</span></a></li>{% endif %}
       {% if perms.acervo.view_leitor %}<li><a href="{% url 'leitores' %}">♧ <span>Leitores</span></a></li>{% endif %}

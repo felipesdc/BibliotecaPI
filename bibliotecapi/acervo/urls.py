@@ -105,3 +105,6 @@ urlpatterns += [
 ]
 
 urlpatterns += [path('regras-circulacao/', views.politica_circulacao, name='politica-circulacao')]
+
+from . import views_atendimento
+urlpatterns += [path('atendimento/', views_atendimento.atendimento, name='atendimento')]

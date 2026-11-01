@@ -186,19 +186,15 @@ def renovacao_emprestimo_bibliotecario(request, pk):
 
         # Check if the form is valid:
         if form.is_valid():
-            # process the data in form.cleaned_data as required (here we just write it to the model due_back field)
-            with transaction.atomic():
-                copia = LivroCopia.objects.select_for_update().get(pk=pk)
-                if copia.estado != 'e':
-                    messages.error(request, 'Este exemplar já foi devolvido.')
-                    return redirect('todos-emprestimos')
-                copia.data_devolucao = form.cleaned_data['data_renovacao']
-                copia.save(update_fields=['data_devolucao'])
-                Emprestimo.objects.filter(copia=copia, devolvido_em__isnull=True).update(prazo=copia.data_devolucao)
-            messages.success(request, 'Empréstimo renovado.')
-
-            # redirect to a new URL:
-            return HttpResponseRedirect(reverse('todos-emprestimos'))
+            from django.core.exceptions import ValidationError
+            from .circulacao import registrar_renovacao
+            try:
+                registrar_renovacao(copia_id=pk, prazo=form.cleaned_data['data_renovacao'])
+            except ValidationError as exc:
+                form.add_error(None, exc)
+            else:
+                messages.success(request, 'Empréstimo renovado.')
+                return HttpResponseRedirect(reverse('todos-emprestimos'))
 
     # If this is a GET (or any other method) create the default form.
     else:
@@ -434,20 +430,15 @@ def politica_circulacao(request):
 @permission_required('acervo.marca_devolucao', raise_exception=True)
 @require_POST
 def devolver(request, pk):
-    with transaction.atomic():
-        copia = get_object_or_404(LivroCopia.objects.select_for_update(), pk=pk)
-        if copia.estado == 'e':
-            agora = timezone.now()
-            abertos = Emprestimo.objects.filter(copia=copia, devolvido_em__isnull=True)
-            if not abertos.exists() and copia.data_devolucao:
-                Emprestimo.objects.create(copia=copia, leitor=copia.leitor, tomador=copia.tomador, realizado_por=request.user, prazo=copia.data_devolucao, devolvido_em=agora)
-            else:
-                abertos.update(devolvido_em=agora)
-            copia.estado, copia.leitor, copia.tomador, copia.data_devolucao = 'd', None, None, None
-            copia.save(update_fields=['estado', 'leitor', 'tomador', 'data_devolucao'])
-            messages.success(request, 'Devolução registrada. Exemplar disponível novamente.')
-        else:
-            messages.info(request, 'Este exemplar não tem empréstimo em aberto.')
+    from django.core.exceptions import ValidationError
+    from .circulacao import registrar_devolucao
+    get_object_or_404(LivroCopia, pk=pk)
+    try:
+        registrar_devolucao(copia_id=pk, operador=request.user)
+    except ValidationError as exc:
+        messages.info(request, ' '.join(exc.messages))
+    else:
+        messages.success(request, 'Devolução registrada. Exemplar disponível novamente.')
     return redirect('todos-emprestimos')
 
 

@@ -109,3 +109,16 @@ O gestor acessa **Regras de circulação** (`acervo.change_politicacirculacao`).
 As regras são globais, persistidas no SQLite e incluídas no backup completo. A alteração não modifica empréstimos existentes; renovação e devolução continuam disponíveis. Desativar o bloqueio ou aumentar o limite libera novas operações conforme a situação atual. Registros legados vinculados apenas a contas de acesso não são associados automaticamente a leitores.
 
 A gravação do empréstimo valida leitor ativo, limite, atrasos e disponibilidade dentro da transação. No SQLite, a escrita inicial serializa operações concorrentes antes da contagem.
+
+## Central de atendimento
+
+O menu **Central de atendimento** exige as duas permissões `acervo.view_leitor` e `acervo.marca_devolucao`, verificadas no servidor. Gestor e atendente recebem ambas; visitantes e consulta interna não acessam a tela nem suas buscas.
+
+1. Busque o leitor por nome ou número e selecione o resultado. Homônimos são diferenciados pelo número do cadastro.
+2. Confira os totais de exemplares em aberto, atrasos e eventuais bloqueios. As regras são revalidadas na gravação.
+3. Busque o exemplar por código, título ou ISBN; confira o código físico e o prazo antes de confirmar o empréstimo.
+4. Para renovar ou devolver, use a linha correspondente na lista dos exemplares do leitor. O leitor permanece selecionado após a operação.
+
+Buscas exibem até 20 resultados e pedem refinamento quando há mais. Não há gravações por GET. Formulários incluem CSRF, validação de datas e mensagens com exemplar, leitor e resultado. As devoluções e renovações usam os serviços transacionais compartilhados com as telas anteriores.
+
+Uma confirmação assinada, com validade de uma hora, vincula renovação/devolução ao leitor e ao registro atual. Se o empréstimo mudar, for devolvido e reaberto ou a confirmação expirar, atualize o atendimento. Empréstimos legados associados a um leitor também podem ser atendidos; itens vinculados apenas a contas de acesso continuam nas telas anteriores.
