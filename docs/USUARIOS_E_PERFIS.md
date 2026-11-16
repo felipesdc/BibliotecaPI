@@ -152,3 +152,9 @@ Depois de confirmar um empréstimo, renovação ou devolução, a central e a li
 Os atalhos permitem continuar com o mesmo leitor, atender outro ou consultar os empréstimos em aberto. Acesso à central continua exigindo ambas as permissões de atendimento; contas com somente `marca_devolucao` recebem o resumo sem esses atalhos. Contas legadas sem cadastro de leitor não oferecem o atalho para o mesmo leitor.
 
 O cartão é transitório, pertence à sessão e à conta que realizou a operação e aparece uma vez no destino do redirecionamento. Expira após dez minutos; atualizar a página não repete o cartão nem a operação. Apenas o resumo mais recente fica pendente por sessão, como os demais avisos transitórios. O histórico continua sendo o registro permanente. Erros de validação e operações recusadas não criam cartões de sucesso.
+
+## Histórico pesquisável
+
+A tela **Histórico** permite combinar busca por nome/número do leitor, título, código do exemplar ou ISBN com situação (todos, em andamento e devolvidos) e período de registro do empréstimo. Contas legadas também são encontradas por nome de acesso, nome ou sobrenome. O período é inclusivo e usa a data local de registro, não a data de devolução.
+
+Os registros mais recentes aparecem primeiro, com desempate por identificador. São 25 registros por página; filtros são preservados na paginação. A tela apresenta total e intervalo de resultados, orienta quando a busca não encontra registros e valida datas e intervalo antes de consultar. O acesso mantém a permissão `marca_devolucao`; as buscas não alteram registros.

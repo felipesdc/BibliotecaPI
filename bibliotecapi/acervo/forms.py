@@ -123,3 +123,20 @@ class FiltroEmprestimosForm(forms.Form):
         if dados.get('situacao') == 'sem_prazo' and (inicio or fim):
             raise forms.ValidationError('Retire as datas para buscar empréstimos sem prazo informado.')
         return dados
+
+
+class FiltroHistoricoForm(forms.Form):
+    q = forms.CharField(label='Leitor, livro ou exemplar', required=False, max_length=100,
+                        widget=forms.TextInput(attrs={'type': 'search', 'placeholder': 'Nome, número do leitor, título, código ou ISBN'}))
+    situacao = forms.ChoiceField(label='Situação', required=False, choices=[
+        ('', 'Todos os registros'), ('abertos', 'Em andamento'), ('devolvidos', 'Devolvidos')])
+    inicio = forms.DateField(label='Empréstimo registrado de', required=False,
+                             widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}))
+    fim = forms.DateField(label='Empréstimo registrado até', required=False,
+                          widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}))
+
+    def clean(self):
+        dados = super().clean()
+        if dados.get('inicio') and dados.get('fim') and dados['inicio'] > dados['fim']:
+            self.add_error('fim', 'A data final deve ser igual ou posterior à data inicial.')
+        return dados

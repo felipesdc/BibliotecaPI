@@ -519,7 +519,40 @@ class HistoricoView(PermissionRequiredMixin, generic.ListView):
     permission_required = 'acervo.marca_devolucao'
     template_name = 'acervo/historico.html'
     paginate_by = 25
-    queryset = Emprestimo.objects.select_related('copia__livro', 'leitor', 'tomador', 'realizado_por')
+
+    def get_queryset(self):
+        from .forms import FiltroHistoricoForm
+        self.filtros = FiltroHistoricoForm(self.request.GET)
+        registros = Emprestimo.objects.select_related('copia__livro', 'leitor', 'tomador', 'realizado_por')
+        if not self.filtros.is_valid():
+            return registros.none()
+        dados = self.filtros.cleaned_data
+        busca = dados.get('q', '')
+        if busca:
+            filtro = (Q(leitor__nome__icontains=busca) | Q(copia__livro__titulo__icontains=busca) |
+                      Q(copia__codigo__icontains=busca) | Q(copia__livro__isbn__icontains=busca) |
+                      Q(tomador__username__icontains=busca) | Q(tomador__first_name__icontains=busca) |
+                      Q(tomador__last_name__icontains=busca))
+            if busca.isdecimal() and len(busca) <= 18:
+                filtro |= Q(leitor_id=int(busca))
+            registros = registros.filter(filtro)
+        if dados.get('situacao') == 'abertos':
+            registros = registros.filter(devolvido_em__isnull=True)
+        elif dados.get('situacao') == 'devolvidos':
+            registros = registros.filter(devolvido_em__isnull=False)
+        if dados.get('inicio'):
+            registros = registros.filter(criado_em__date__gte=dados['inicio'])
+        if dados.get('fim'):
+            registros = registros.filter(criado_em__date__lte=dados['fim'])
+        return registros.order_by('-criado_em', '-pk')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filtros'] = self.filtros
+        context['filtros_validos'] = not self.filtros.errors
+        context['tem_filtros'] = any(self.request.GET.get(campo) for campo in self.filtros.fields)
+        return context
+
 
 
 @login_required

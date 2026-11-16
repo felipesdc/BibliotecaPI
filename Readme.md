@@ -80,7 +80,7 @@ A **Central de atendimento** reúne a operação de balcão em `/acervo/atendime
 - **Empréstimos → Renovar:** escolha uma data entre hoje e 4 semanas.
 - **Empréstimos → Devolver:** o exemplar volta à disponibilidade; o histórico permanece.
 - **Confirmação das operações:** empréstimo, renovação e devolução exibem resumo com livro, código, leitor, prazo e operador, mais atalhos para continuar com o mesmo leitor ou iniciar outro atendimento. O resumo é temporário; consulte o histórico para registros permanentes.
-- **Histórico:** consulta das operações realizadas nesta ferramenta.
+- **Histórico:** busque operações por leitor, livro, código ou ISBN e combine situação (em andamento/devolvido) com período de registro do empréstimo. Filtros são mantidos entre páginas.
 - **Catálogo → Exportar acervo:** download CSV dos exemplares. Não inclui contatos de leitores.
 
 O primeiro gestor usa o comando `preparar_biblioteca`. Depois, as contas da equipe são criadas e administradas em **Usuários e perfis**, com perfis de gestor, atendente e consulta interna. Contas novas recebem senha temporária e devem trocá-la ao entrar. Para administração técnica, `manage.py createsuperuser` continua disponível; o gestor comum não é superusuário.

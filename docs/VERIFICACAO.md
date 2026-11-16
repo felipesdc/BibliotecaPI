@@ -146,3 +146,11 @@ Guia: [usuários e perfis](USUARIOS_E_PERFIS.md). As contas fictícias continuam
 - Cinco novos testes verificam seção atual em listas/detalhes/edição, estrutura acessível e fallback sem JS, links do resumo/identificação de campos inválidos, foco único em filtros/central, títulos e preservação das restrições dos menus.
 - **104 testes aprovados localmente e na imagem Docker**. Sintaxe de `interface.js` validada com `node --check`. Verificações Django, ausência de migrações pendentes e `git diff --check` aprovadas. Sem nova dependência ou alteração de esquema.
 - Revisão manual no Chrome: emulação responsiva de **390 px**, abrir menu e fechar por Escape com foco no botão; retorno à visualização desktop; navegação a filtro inválido com foco automático no resumo de erros. Navegador devolvido ao modo desktop. Sem ensaio em dispositivo físico, leitor de tela ou auditoria completa de acessibilidade.
+
+## Histórico pesquisável — 15/11/2026
+
+- Histórico com busca por leitor (nome/número), título, código, ISBN e nomes de contas legadas; filtros combináveis por situação e período de registro do empréstimo, inclusive na data local.
+- Contagem total, intervalo visível, 25 registros por página e ordenação estável dos mais recentes. Paginação mantém a busca; estados vazios e erros orientam a correção. Filtros inválidos não apresentam resultados parciais.
+- Cinco novos testes fictícios cobrem buscas e combinações, registros legados, limites do período à meia-noite e fim do dia, validação, estados vazios, paginação, acesso e ausência de alterações em GET.
+- Verificações Django, ausência de migrações pendentes e `git diff --check` aprovadas. Sem mudança de esquema ou novas dependências. Demonstração reconstruída e saudável na porta 8001; não houve nova inspeção visual em navegador nesta etapa.
+- **109 testes aprovados localmente e na imagem Docker**, incluindo os cinco novos testes do histórico.
