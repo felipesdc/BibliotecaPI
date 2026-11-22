@@ -1,14 +1,1 @@
-{% extends "base_generic.html" %}
-
-{% block content %}
-
-<h1>Excluir Lingua: {{ lingua }}</h1>
-
-<p>Tem certeza que deseja excluir essa lingua?</p>
-
-<form action="" method="POST">
-  {% csrf_token %}
-  <input type="submit" action="" value="Sim, excluir.">
-</form>
-
-{% endblock %}
+{% extends "base_generic.html" %}{% block content %}<div class="page-heading"><div><p class="eyebrow">GESTÃO DO ACERVO</p><h1>Excluir idioma</h1></div></div><section class="panel"><h2>{{ lingua }}</h2><p>A exclusão remove este cadastro de forma permanente. Confirme somente depois de conferir a identificação acima.</p><form method="post">{% csrf_token %}<div class="form-actions"><button type="submit" class="danger">Confirmar exclusão</button><a class="btn secondary" href="{% url 'linguas' %}">Cancelar</a></div></form></section>{% endblock %}

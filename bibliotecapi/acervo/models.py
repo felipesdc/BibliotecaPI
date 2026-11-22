@@ -228,3 +228,47 @@ class PoliticaCirculacao(models.Model):
     @classmethod
     def atual(cls):
         return cls.objects.filter(pk=1).first() or cls(pk=1)
+
+
+class ConfiguracaoBiblioteca(models.Model):
+    nome = models.CharField('Nome da biblioteca', max_length=80, default='BibliotecaPI')
+    email = models.EmailField('E-mail público', blank=True)
+    telefone = models.CharField('Telefone público', max_length=40, blank=True)
+    orientacoes = models.TextField('Orientações aos leitores', max_length=1000, blank=True)
+    versao = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=models.Q(pk=1), name='configuracao_biblioteca_unica')]
+
+    @classmethod
+    def atual(cls):
+        return cls.objects.filter(pk=1).first() or cls(pk=1)
+
+
+class BackupRegistro(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nome = models.CharField(max_length=100, unique=True)
+    tamanho = models.PositiveBigIntegerField()
+    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        ordering = ['-criado_em', '-pk']
+        permissions = [('manage_backups', 'Pode gerar e baixar backups completos')]
+
+
+class Reserva(models.Model):
+    livro = models.ForeignKey(Livro, on_delete=models.PROTECT, related_name='reservas')
+    leitor = models.ForeignKey(Leitor, on_delete=models.PROTECT, related_name='reservas')
+    estado = models.CharField(max_length=1, default='a', choices=[('a', 'Na fila'), ('c', 'Cancelada'), ('u', 'Atendida')])
+    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='reservas_criadas')
+    encerrado_em = models.DateTimeField(null=True, blank=True)
+    encerrado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='reservas_encerradas')
+    emprestimo = models.OneToOneField(Emprestimo, on_delete=models.PROTECT, null=True, blank=True)
+
+    class Meta:
+        ordering = ['criado_em', 'pk']
+        permissions = [('manage_reservas', 'Pode gerenciar a fila de reservas'), ('print_etiquetas', 'Pode imprimir etiquetas de exemplares')]
+        constraints = [models.UniqueConstraint(fields=['livro', 'leitor'], condition=models.Q(estado='a'), name='uma_reserva_ativa_por_leitor_titulo')]
+        indexes = [models.Index(fields=['livro', 'estado', 'criado_em'])]

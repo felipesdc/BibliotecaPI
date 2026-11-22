@@ -56,6 +56,10 @@ Reinícios e recriações preservam banco e chave. Apagar volumes no Docker Desk
 
 ## Backup
 
+O gestor também pode gerar e baixar uma cópia em **Cópias de segurança**, sem terminal. O painel mostra somente os backups gerados pela interface, incluindo data, responsável e tamanho. Usa a mesma API consistente do comando e verifica a integridade antes de disponibilizar o arquivo. As cópias ficam em `/data/backups`, no volume persistente; faça o download para um local protegido fora do computador. A cópia inclui reservas, configuração e todas as demais tabelas, além de contas e dados de leitores. Não inclui o arquivo `secret_key`; preserve-o conforme a orientação abaixo.
+
+A restauração permanece técnica, com a aplicação parada. Não substitua o banco em uso pelo navegador. A migração `0011` é aplicada automaticamente ao recriar a aplicação e concede os novos acessos aos grupos existentes. Antes de migrar, o iniciador continua gerando a cópia de segurança automática.
+
 ```sh
 docker compose exec app python manage.py backup_biblioteca
 docker compose cp app:/data/backups ./backups

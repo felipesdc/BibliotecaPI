@@ -1,15 +1,18 @@
 """Registro de empréstimos com validação das regras dentro da transação."""
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 
-from .models import Emprestimo, Leitor, LivroCopia, PoliticaCirculacao
+from .models import Emprestimo, Leitor, Livro, LivroCopia, PoliticaCirculacao, Reserva
 
 
 @transaction.atomic
 def registrar_emprestimo(*, copia, leitor, prazo, operador):
     # A primeira escrita serializa concorrentes também no SQLite, antes das contagens.
     # Em bancos com bloqueio por linha, serializa os empréstimos do mesmo leitor.
+    if copia.livro_id:
+        Livro.objects.filter(pk=copia.livro_id).update(titulo=F('titulo'))
     if not Leitor.objects.filter(pk=leitor.pk, ativo=True).update(ativo=True):
         raise ValidationError('Este leitor está inativo. Selecione um leitor ativo.')
     politica = PoliticaCirculacao.atual()
@@ -21,11 +24,22 @@ def registrar_emprestimo(*, copia, leitor, prazo, operador):
         raise ValidationError('O leitor atingiu o limite de empréstimos em aberto.')
     if politica.bloquear_atrasados and abertos.filter(data_devolucao__lt=hoje).exists():
         raise ValidationError('O leitor tem devoluções em atraso. Regularize antes de um novo empréstimo.')
+    from .reservas import fila
+    reservas = list(fila(copia.livro_id))
+    disponiveis = LivroCopia.objects.filter(livro_id=copia.livro_id, estado='d').count()
+    propria = next((r for r in reservas if r.leitor_id == leitor.pk), None)
+    if reservas:
+        posicao = reservas.index(propria) if propria else len(reservas)
+        if posicao >= disponiveis:
+            raise ValidationError('Há leitores com prioridade na fila de reservas deste título. Confira a fila antes de emprestar.')
     alteradas = LivroCopia.objects.filter(pk=copia.pk, estado='d').update(
         estado='e', leitor=leitor, tomador=None, data_devolucao=prazo)
     if not alteradas:
         raise ValidationError('Este exemplar não está disponível para empréstimo.')
-    return Emprestimo.objects.create(copia=copia, leitor=leitor, realizado_por=operador, prazo=prazo)
+    emprestimo = Emprestimo.objects.create(copia=copia, leitor=leitor, realizado_por=operador, prazo=prazo)
+    if propria:
+        Reserva.objects.filter(pk=propria.pk, estado='a').update(estado='u', encerrado_em=timezone.now(), encerrado_por=operador, emprestimo=emprestimo)
+    return emprestimo
 
 
 _NAO_INFORMADO = object()
@@ -70,6 +84,9 @@ def registrar_renovacao(*, copia_id, prazo, esperado=None):
     if not hoje <= prazo <= hoje + timedelta(days=28):
         raise ValidationError('A renovação deve ficar entre hoje e daqui a 28 dias.')
     copia = _emprestimo_atual(copia_id, esperado)
+    from .reservas import fila
+    if fila(copia.livro_id).exclude(leitor_id=copia.leitor_id).exists():
+        raise ValidationError('Este título tem reserva de outro leitor. Registre a devolução para atender a fila.')
     copia.data_devolucao = prazo
     copia.save(update_fields=['data_devolucao'])
     Emprestimo.objects.filter(copia=copia, devolvido_em__isnull=True).update(prazo=prazo)

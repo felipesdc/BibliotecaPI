@@ -49,14 +49,21 @@ A inferência para o BibliotecaPI é manter um recorte pequeno desses fluxos: im
 - SQLite local em arquivo novo; a etapa posterior de infraestrutura removeu a configuração PostgreSQL e adicionou Docker Desktop (ver `DOCKER.md`). Arquivo `db.sqlite3` original não alterado.
 - Dependências reduzidas e Django 5.2 LTS. A [política oficial de versões](https://www.djangoproject.com/download/) fundamenta a escolha de uma linha LTS.
 
+## Complementos de gestão — 22/11/2026
+
+- Backup completo pelo painel do gestor, registro das cópias, download protegido e data da última geração pela interface.
+- Identidade pública configurável; etiquetas de exemplares para impressão A4, sem biblioteca externa.
+- Reservas por título com fila, suspensão de leitores inativos, baixa automática no empréstimo e bloqueio da renovação quando outros leitores aguardam.
+- Histórico pesquisável já entregue; workflow de verificação no GitHub e componentes visuais comuns de catálogo.
+
 ## Limites e próximos critérios para adoção
 
 1. **Planilha real ainda não disponível.** A associação flexível cobre uma aba de acervo com uma linha por exemplar. Uma planilha de títulos com coluna de quantidade, múltiplas linhas de cabeçalho, células mescladas, autores em formatos variados ou várias abas relacionadas precisa de adaptação. A primeira linha preenchida deve ser o cabeçalho.
-2. **Migração dos empréstimos ativos não está automatizada.** O importador bloqueia situações de empréstimo/reserva quando associadas, e exige confirmação explícita de que os itens estão disponíveis ou em manutenção. Leitores existentes são cadastrados pela interface; importação de leitores e histórico legado depende do formato real. Antes de substituir o Excel, reconciliar todos os empréstimos atuais.
+2. **Migração dos empréstimos ativos não está automatizada.** O importador bloqueia situações de empréstimo/reserva quando associadas, e exige confirmação explícita de que os itens estão disponíveis ou em manutenção. Reservas novas são operadas pela fila na aplicação, sem importação automática das reservas legadas. Leitores existentes são cadastrados pela interface; importação de leitores e histórico legado depende do formato real. Antes de substituir o Excel, reconciliar todos os empréstimos atuais.
 3. **Sem sincronização bidirecional.** Reimportar preserva exemplares conhecidos; não atualiza metadados existentes. O Excel deixa de ser a fonte operacional após a conferência da migração.
 4. **Execução sem Docker e publicação.** A etapa posterior adicionou Gunicorn e persistência via Docker (ver `DOCKER.md`). Os iniciadores usam o servidor de desenvolvimento Django, limitado a `127.0.0.1`. Não são uma solução de hospedagem pública. Uso em rede exige servidor de aplicação, HTTPS, configuração de produção e rotina de backup. Vercel serverless requer banco persistente externo; não usar SQLite efêmero nesse ambiente.
 5. **Backups precisam sair do computador.** CSV é intercâmbio de acervo; não é cópia completa. O comando de backup inclui contas, leitores e histórico; armazenar cópias em local protegido e testar restauração.
-6. **Políticas ainda simples.** Prazo inicial configurável (padrão de 14 dias), limite de exemplares por leitor e bloqueio opcional de novos empréstimos por atraso. Renovação entre hoje e 28 dias; sem multas, reservas funcionais, notificações e leitura de códigos de barras.
+6. **Políticas ainda simples.** Prazo inicial configurável (padrão de 14 dias), limite de exemplares por leitor e bloqueio opcional de novos empréstimos por atraso. Renovação entre hoje e 28 dias; sem multas, notificações e leitura de códigos de barras. A etapa de 22/11/2026 acrescentou reservas por título, fila por leitores ativos e etiquetas com códigos em texto.
 7. **Validação humana necessária.** Interface conferida em Chrome desktop; a CSS inclui adaptação a telas menores, mas não houve teste em aparelho móvel nem ensaio com a equipe da biblioteca.
 
 ## Roteiro de homologação com a biblioteca

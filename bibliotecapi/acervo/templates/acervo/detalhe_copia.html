@@ -1,35 +1,4 @@
-{% extends "base_generic.html" %}
-
-{% block content %}
-
-<h1>Cópia de Livro: {{ copia.livro.titulo }}</h1>
-
-<p><strong>Autor:</strong> <a href="{{ copia.livro.autor.get_absolute_url }}">{{ copia.livro.autor }}</a></p>
-
-<p><strong>Editora:</strong> {{ copia.editora }}</p>
-<p><strong>Estado:</strong> {{ copia.get_estado_display }} {% if copia.estado != 'd' %} (Devolução: {{copia.data_devolucao}}){% endif %}</p>
-
-<hr>
-<ul>
-  <li>
-    <a href="{{ copia.livro.get_absolute_url }}">Todas as cópias</a></p>
-  </li>
-</ul>
-{% endblock %}
-
-{% block sidebar %}
-  {{ block.super }}
-
-  {% if perms.acervo.change_livrocopia or perms.acervo.delete_livrocopia %}
-  <hr>
-  <ul class="sidebar-nav">
-    {% if perms.acervo.change_livrocopia %}
-      <li><a href="{% url 'alterar-copia' copia.id %}">Alterar Cópia</a></li>
-    {% endif %}
-    {% if perms.acervo.delete_livrocopia %}
-      <li><a href="{% url 'excluir-copia' copia.id %}">Excluir Cópia</a></li>
-    {% endif %}
-  </ul>
-  {% endif %}
-
+{% extends "base_generic.html" %}{% block content %}
+<div class="page-heading"><div><p class="eyebrow">IDENTIFICAÇÃO DO EXEMPLAR</p><h1>{{ copia.codigo|default:copia.pk }}</h1><p>{{ copia.livro.titulo|default:'Sem título informado' }}</p></div><div class="actions">{% if perms.acervo.marca_devolucao and copia.estado == 'd' %}<a class="btn" href="{% url 'emprestar' copia.pk %}">Emprestar exemplar</a>{% endif %}{% if perms.acervo.marca_devolucao and copia.estado == 'e' %}<a class="btn" href="{% url 'renovacao-emprestimo-bibliotecario' copia.pk %}">Renovar empréstimo</a>{% endif %}{% if perms.acervo.change_livrocopia %}<a class="btn secondary" href="{% url 'alterar-copia' copia.pk %}">Editar exemplar</a>{% endif %}</div></div>
+<section class="panel"><dl><dt>Livro</dt><dd>{% if copia.livro %}<a href="{{ copia.livro.get_absolute_url }}">{{ copia.livro.titulo }}</a>{% else %}Não informado{% endif %}</dd><dt>Editora</dt><dd>{{ copia.editora|default:'Não informada' }}</dd><dt>Situação</dt><dd>{% include 'acervo/componentes/estado_exemplar.html' %}</dd>{% if copia.estado == 'e' %}<dt>Retorno previsto</dt><dd>{{ copia.data_devolucao|date:'d/m/Y'|default:'Não informado' }}</dd>{% endif %}</dl><div class="form-actions"><a class="btn secondary" href="{% url 'copias' %}">Voltar aos exemplares</a>{% if perms.acervo.delete_livrocopia %}<a class="btn secondary danger" href="{% url 'excluir-copia' copia.pk %}">Excluir exemplar</a>{% endif %}</div></section>
 {% endblock %}

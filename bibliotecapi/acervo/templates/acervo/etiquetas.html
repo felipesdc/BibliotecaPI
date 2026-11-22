@@ -1,0 +1,6 @@
+{% extends "base_generic.html" %}{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ORGANIZAÇÃO DO ACERVO</p><h1>Etiquetas de exemplares</h1><p>Selecione até 60 exemplares para gerar uma folha com o código e a identificação do livro.</p></div></div>
+<form method="get" class="toolbar"><label for="busca-etiquetas">Código, título ou ISBN<input type="search" id="busca-etiquetas" name="q" value="{{ busca }}" maxlength="100"></label>{% if livro_id %}<input type="hidden" name="livro" value="{{ livro_id }}">{% endif %}<button type="submit">Buscar</button><a href="{% url 'etiquetas' %}">Limpar busca</a></form>
+{% if mais_resultados %}<p class="notice">Mostrando os primeiros 60 exemplares. Refine a busca para encontrar outros códigos.</p>{% endif %}
+<form method="post" class="panel">{% csrf_token %}<fieldset class="label-selection"><legend>Exemplares para impressão</legend>{% if tem_exemplares %}{{ form.exemplares }}{% else %}<p>Nenhum exemplar encontrado. Ajuste a busca ou cadastre o acervo.</p>{% endif %}{{ form.exemplares.errors }}</fieldset><div class="form-actions"><button type="submit" {% if not tem_exemplares %}disabled{% endif %}>Gerar folha de etiquetas</button><a class="btn secondary" href="{% url 'copias' %}">Voltar aos exemplares</a></div></form>
+{% endblock %}

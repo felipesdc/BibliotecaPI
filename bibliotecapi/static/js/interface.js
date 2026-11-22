@@ -31,6 +31,9 @@
     pequeno.addEventListener('change', () => { aberto = false; atualizar(); });
     atualizar();
   }
+  document.querySelectorAll('[data-imprimir]').forEach((botao) => {
+    botao.addEventListener('click', () => window.print());
+  });
   const tabelas = document.querySelectorAll('.table-wrap');
   const prepararTabelas = () => tabelas.forEach((tabela) => {
     if (tabela.scrollWidth > tabela.clientWidth) {

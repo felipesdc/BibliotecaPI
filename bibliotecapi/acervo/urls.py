@@ -108,3 +108,14 @@ urlpatterns += [path('regras-circulacao/', views.politica_circulacao, name='poli
 
 from . import views_atendimento
 urlpatterns += [path('atendimento/', views_atendimento.atendimento, name='atendimento')]
+
+from . import views_gestao
+urlpatterns += [
+    path('backups/', views_gestao.backups, name='backups'),
+    path('backups/<uuid:pk>/', views_gestao.baixar_backup, name='baixar-backup'),
+    path('configuracao/', views_gestao.configuracao, name='configuracao'),
+    path('etiquetas/', views_gestao.etiquetas, name='etiquetas'),
+    path('reservas/', views_gestao.reservas, name='reservas'),
+    path('livro/<int:pk>/reservar/', views_gestao.criar_reserva, name='criar-reserva'),
+    path('reservas/<int:pk>/cancelar/', views_gestao.cancelar_reserva, name='cancelar-reserva'),
+]

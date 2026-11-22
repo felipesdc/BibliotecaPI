@@ -102,7 +102,24 @@ Acesse como `gestor_demo`, com a senha fictícia `BibliotecaDemo2026!`. A carga 
 
 [Critérios dos relatórios, contas e dados da demonstração](docs/RELATORIOS_E_DEMONSTRACAO.md).
 
+## Reservas e fila de espera
+
+No catálogo, abra um livro e escolha **Reservar título**; selecione um leitor ativo. O menu **Reservas** mostra a ordem da fila, quem tem exemplar disponível e as reservas canceladas ou atendidas. Gestor e atendente podem operar a fila.
+
+A prioridade é por título e ordem de entrada dos leitores ativos. Cópias disponíveis atendem as primeiras posições; cópias excedentes podem ser emprestadas a outros leitores. O empréstimo encerra automaticamente a reserva correspondente. Reservas de outros leitores bloqueiam a renovação. A devolução torna o exemplar disponível para a fila; use **Ver fila deste título** no resumo da operação. O atendimento continua validando limites e atrasos.
+
+Leitores inativos ficam com a reserva suspensa e retomam sua posição original ao serem reativados. Não há expiração nem notificação automática; a equipe pode cancelar a reserva pela lista. O estado físico legado “Reservado” não cria uma entrada na nova fila e precisa ser conciliado pela equipe.
+
+## Etiquetas e identidade da biblioteca
+
+- **Etiquetas de exemplares:** pesquise código, título ou ISBN e selecione até 60 exemplares. Gere a folha e use **Imprimir etiquetas** (ou a impressão do navegador). Formato A4, etiquetas de 62 × 35 mm, intervalos de 3 mm, margens de 9 mm e escala 100%, sem cabeçalhos/rodapés do navegador. Faça um ensaio em papel comum. A etiqueta traz nome da biblioteca, título abreviado e código completo em texto; não gera código de barras. Disponível para gestor e atendente.
+- **Configuração da biblioteca:** o gestor personaliza nome, e-mail, telefone e orientações. Contatos são públicos e aparecem no rodapé; orientações aparecem na página inicial. Configuração persistida no SQLite e incluída no backup. Formulários abertos antes de outra alteração precisam ser atualizados para evitar sobrescrita.
+
 ## Dados e backup
+
+O gestor pode usar **Cópias de segurança → Gerar backup completo**, conferir data/responsável/tamanho e clicar em **Baixar último backup**. As últimas 25 cópias geradas pelo painel ficam listadas; os arquivos permanecem no armazenamento até serem administrados pelo responsável técnico. O arquivo contém todas as tabelas do banco, inclusive reservas, configuração, contas e dados de leitores. Download restrito ao gestor, sem cache; guarde a cópia em local protegido fora do computador.
+
+O painel registra somente backups gerados por ele. Cópias feitas pelo comando abaixo ou antes de migrações não aparecem nessa lista. A restauração continua pelo procedimento do [guia Docker](docs/DOCKER.md), com a aplicação parada.
 
 O banco local novo fica em `bibliotecapi/biblioteca.sqlite3`. O `db.sqlite3` original foi preservado e não é migrado automaticamente para o banco novo.
 
@@ -139,3 +156,9 @@ Formulários com erro exibem um resumo com links para os campos; tabelas largas 
 [Leia a avaliação, o benchmark e os limites do piloto](docs/AVALIACAO_E_BENCHMARK.md). [Evidências da verificação](docs/VERIFICACAO.md).
 
 O desenvolvimento atual é validado com dados fictícios; o acesso à planilha da biblioteca deixou de estar disponível. A carga de demonstração permite reproduzir os fluxos e os testes sem dados reais.
+
+## Testes automáticos no GitHub
+
+O workflow [verificacao.yml](.github/workflows/verificacao.yml) executa em cada push, pull request ou acionamento manual: verificações Django, conferência e aplicação de migrações em banco temporário, suíte de testes, sintaxe JavaScript, construção da imagem e testes dentro do Docker. Não usa dados reais, credenciais de implantação ou permissão de escrita no repositório.
+
+O workflow será ativado no GitHub quando este arquivo for enviado ao repositório e o Actions estiver habilitado. As ações seguem os exemplos oficiais de [checkout](https://github.com/actions/checkout) e [setup-python](https://github.com/actions/setup-python). O histórico de execução remota fica na aba **Actions**.

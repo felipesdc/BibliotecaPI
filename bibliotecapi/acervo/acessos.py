@@ -10,8 +10,8 @@ from .models import EventoAcesso, PerfilAcesso
 GRUPOS = {'gestor': 'Biblioteca · Gestor', 'atendente': 'Biblioteca · Atendente', 'consulta': 'Biblioteca · Consulta interna'}
 CATALOGO = [f'view_{m}' for m in ['livro', 'livrocopia', 'autor', 'genero', 'lingua']]
 PERMISSOES = {
-    'gestor': [f'{a}_{m}' for m in ['livro', 'livrocopia', 'autor', 'genero', 'lingua', 'leitor'] for a in ['view', 'add', 'change', 'delete']] + ['marca_devolucao', 'view_relatorios', 'manage_usuarios', 'export_acervo', 'change_politicacirculacao'],
-    'atendente': CATALOGO + ['view_leitor', 'add_leitor', 'change_leitor', 'marca_devolucao'],
+    'gestor': [f'{a}_{m}' for m in ['livro', 'livrocopia', 'autor', 'genero', 'lingua', 'leitor'] for a in ['view', 'add', 'change', 'delete']] + ['marca_devolucao', 'view_relatorios', 'manage_usuarios', 'export_acervo', 'change_politicacirculacao', 'change_configuracaobiblioteca', 'manage_backups', 'manage_reservas', 'print_etiquetas'],
+    'atendente': CATALOGO + ['view_leitor', 'add_leitor', 'change_leitor', 'marca_devolucao', 'manage_reservas', 'print_etiquetas'],
     'consulta': CATALOGO,
 }
 

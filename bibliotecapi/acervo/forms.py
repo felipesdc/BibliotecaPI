@@ -1,7 +1,7 @@
 import datetime
 
 from django import forms
-from .models import Leitor, LivroCopia, PoliticaCirculacao
+from .models import Leitor, LivroCopia, PoliticaCirculacao, ConfiguracaoBiblioteca
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -140,3 +140,33 @@ class FiltroHistoricoForm(forms.Form):
         if dados.get('inicio') and dados.get('fim') and dados['inicio'] > dados['fim']:
             self.add_error('fim', 'A data final deve ser igual ou posterior à data inicial.')
         return dados
+
+
+class ConfiguracaoBibliotecaForm(forms.ModelForm):
+    versao = forms.IntegerField(widget=forms.HiddenInput, min_value=1)
+
+    class Meta:
+        model = ConfiguracaoBiblioteca
+        fields = ['nome', 'email', 'telefone', 'orientacoes', 'versao']
+        widgets = {'orientacoes': forms.Textarea(attrs={'rows': 4})}
+
+
+class EtiquetasForm(forms.Form):
+    exemplares = forms.ModelMultipleChoiceField(queryset=LivroCopia.objects.select_related('livro'),
+                                               label='Exemplares', widget=forms.CheckboxSelectMultiple)
+
+    def clean_exemplares(self):
+        itens = self.cleaned_data['exemplares']
+        if itens.count() > 60:
+            raise forms.ValidationError('Selecione no máximo 60 exemplares por impressão.')
+        return itens.order_by('livro__titulo', 'codigo', 'pk')
+
+
+class ReservaForm(forms.Form):
+    leitor = forms.ModelChoiceField(queryset=Leitor.objects.filter(ativo=True), widget=forms.HiddenInput)
+
+
+class FiltroReservasForm(forms.Form):
+    q = forms.CharField(label='Título, nome ou número do leitor', max_length=100, required=False)
+    situacao = forms.ChoiceField(label='Situação', required=False, choices=[
+        ('', 'Na fila'), ('c', 'Canceladas'), ('u', 'Atendidas'), ('todas', 'Todas')])

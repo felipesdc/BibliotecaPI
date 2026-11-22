@@ -1,0 +1,47 @@
+name: Verificação BibliotecaPI
+
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verificacao-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DJANGO_SECRET_KEY: ci-only-fictitious-key-not-for-deployment
+      DJANGO_DEBUG: "False"
+      SQLITE_PATH: ${{ runner.temp }}/biblioteca-ci.sqlite3
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: bibliotecapi/requirements.txt
+      - name: Instalar dependências
+        run: python -m pip install -r bibliotecapi/requirements.txt
+      - name: Verificar aplicação
+        run: python bibliotecapi/manage.py check
+      - name: Conferir migrações versionadas
+        run: python bibliotecapi/manage.py makemigrations --check --dry-run
+      - name: Aplicar migrações em banco temporário
+        run: python bibliotecapi/manage.py migrate --noinput
+      - name: Executar testes com dados fictícios
+        run: python bibliotecapi/manage.py test acervo bibliotecapi
+      - name: Verificar JavaScript
+        run: node --check bibliotecapi/static/js/interface.js
+      - name: Construir imagem Docker
+        run: docker build --tag bibliotecapi-ci .
+      - name: Executar testes na imagem
+        run: docker run --rm --entrypoint python -e DJANGO_SECRET_KEY=ci-only-fictitious-key -e SQLITE_PATH=/tmp/ci.sqlite3 bibliotecapi-ci manage.py test acervo bibliotecapi

@@ -1,0 +1,1 @@
+<span class="badge {% if copia.em_atraso %}danger{% elif copia.estado != 'd' %}warning{% endif %}">{{ copia.get_estado_display }}{% if copia.em_atraso %} · em atraso{% endif %}</span>

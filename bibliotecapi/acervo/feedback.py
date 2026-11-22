@@ -13,6 +13,7 @@ def confirmar_operacao(request, *, acao, copia, destino, leitor=None, prazo=None
     request.session[CHAVE_RESULTADO] = {
         'usuario': request.user.pk, 'destino': destino, 'criado_em': agora.timestamp(),
         'acao': acao, 'titulo': TITULOS[acao],
+        'livro_id': copia.livro_id,
         'livro': str(copia.livro) if copia.livro else 'Sem título informado',
         'codigo': copia.codigo or str(copia.pk),
         'leitor': str(pessoa.nome if hasattr(pessoa, 'nome') else pessoa) if pessoa else 'Não informado',

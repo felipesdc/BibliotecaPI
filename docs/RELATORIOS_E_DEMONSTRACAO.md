@@ -82,3 +82,7 @@ docker compose -f compose.demo.yaml down
 ```
 
 `down` preserva o volume da demonstração. Evite confundir os arquivos Compose: a instalação principal usa `compose.yaml`, e a demonstração usa `compose.demo.yaml` explicitamente.
+
+## Complementos fictícios de gestão — 22/11/2026
+
+A carga também complementa a configuração pública (`biblioteca@example.invalid`, telefone fictício) e quatro reservas: duas na fila de “A menina e o farol”, uma cancelada e uma atendida vinculada a um empréstimo encerrado. A complementação ocorre apenas quando ainda não há reservas; não reinicializa filas alteradas pelo usuário nem troca a identidade configurada. Não cria backups automaticamente: teste a geração com `gestor_demo` no menu **Cópias de segurança**.

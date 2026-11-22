@@ -1,5 +1,6 @@
 {% extends "base_generic.html" %}
 {% block content %}
+{% if biblioteca.orientacoes %}<section class="panel"><h2>Orientações da biblioteca</h2><p>{{ biblioteca.orientacoes|linebreaksbr }}</p></section>{% endif %}
 {% if painel_gestao or painel_atendimento %}
 {% include 'acervo/painel.html' %}
 {% else %}

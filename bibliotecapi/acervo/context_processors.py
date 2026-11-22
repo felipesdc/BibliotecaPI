@@ -2,10 +2,15 @@ from django.conf import settings
 
 
 def ambiente(request):
-    return {'ambiente_demo': settings.DEMO_MODE}
+    from .models import ConfiguracaoBiblioteca
+    return {'ambiente_demo': settings.DEMO_MODE, 'biblioteca': ConfiguracaoBiblioteca.atual()}
 
 
 SECOES = {
+    'backups': ('Cópias de segurança', ['baixar-backup']),
+    'configuracao': ('Configuração da biblioteca', []),
+    'etiquetas': ('Etiquetas de exemplares', []),
+    'reservas': ('Reservas', ['criar-reserva', 'cancelar-reserva']),
     'index': ('Visão geral', []),
     'livros': ('Catálogo de livros', ['detalhe-livro', 'adicionar-livro', 'alterar-livro', 'excluir-livro']),
     'copias': ('Exemplares', ['detalhe-copia', 'adicionar-copia', 'alterar-copia', 'excluir-copia']),

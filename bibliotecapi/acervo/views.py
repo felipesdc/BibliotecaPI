@@ -99,6 +99,7 @@ class AutorListView(generic.ListView):
 class AutorDetailView(generic.DetailView):
     """Classe genérica para visão detalhe do Autor."""
     model = Autor
+    queryset = Autor.objects.prefetch_related('livro_set__autor')
     context_object_name = 'autor'
     template_name = 'acervo/detalhe_autor.html'
 
@@ -115,6 +116,7 @@ class GeneroListView(generic.ListView):
 class GeneroDetailView(generic.DetailView):
     """Classe genérica para visão lista de Gêneros."""
     model = Genero
+    queryset = Genero.objects.prefetch_related('livro_set__autor')
     context_object_name = 'genero'
     template_name = 'acervo/detalhe_genero.html'
 
@@ -131,6 +133,7 @@ class LinguaListView(generic.ListView):
 class LinguaDetailView(generic.DetailView):
     """Classe genérica para visão lista das Línguas."""
     model = Lingua
+    queryset = Lingua.objects.prefetch_related('livro_set__autor')
     context_object_name = 'lingua'
     template_name = 'acervo/detalhe_lingua.html'
 
@@ -396,6 +399,9 @@ class AlterarLivroCopia(PermissionRequiredMixin, UpdateView):
 
 class ExcluirLivroCopia(PermissionRequiredMixin, DeleteView):
     def form_valid(self, form):
+        if self.object.estado in ('e', 'r'):
+            messages.error(self.request, 'Registre a devolução ou regularize a reserva antes de excluir o exemplar.')
+            return redirect('detalhe-copia', pk=self.object.pk)
         try:
             return super().form_valid(form)
         except ProtectedError:

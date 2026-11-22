@@ -1,14 +1,1 @@
-{% extends "base_generic.html" %}
-
-{% block content %}
-
-<h1>Excluir Cópia de Livro: {{ livrocopia }}</h1>
-
-<p>Tem certeza que deseja excluir essa cópia de livro?</p>
-
-<form action="" method="POST">
-  {% csrf_token %}
-  <input type="submit" action="" value="Sim, excluir.">
-</form>
-
-{% endblock %}
+{% extends "base_generic.html" %}{% block content %}<div class="page-heading"><div><p class="eyebrow">GESTÃO DO ACERVO</p><h1>Excluir exemplar</h1></div></div><section class="panel"><h2>{{ livrocopia }}</h2><p>A exclusão remove este cadastro de forma permanente. Confirme somente depois de conferir a identificação acima.</p><form method="post">{% csrf_token %}<div class="form-actions"><button type="submit" class="danger">Confirmar exclusão</button><a class="btn secondary" href="{% url 'copias' %}">Cancelar</a></div></form></section>{% endblock %}

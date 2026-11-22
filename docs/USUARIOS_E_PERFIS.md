@@ -158,3 +158,32 @@ O cartão é transitório, pertence à sessão e à conta que realizou a operaç
 A tela **Histórico** permite combinar busca por nome/número do leitor, título, código do exemplar ou ISBN com situação (todos, em andamento e devolvidos) e período de registro do empréstimo. Contas legadas também são encontradas por nome de acesso, nome ou sobrenome. O período é inclusivo e usa a data local de registro, não a data de devolução.
 
 Os registros mais recentes aparecem primeiro, com desempate por identificador. São 25 registros por página; filtros são preservados na paginação. A tela apresenta total e intervalo de resultados, orienta quando a busca não encontra registros e valida datas e intervalo antes de consultar. O acesso mantém a permissão `marca_devolucao`; as buscas não alteram registros.
+
+## Novos recursos de gestão — 22/11/2026
+
+| Recurso | Gestor | Atendente | Consulta interna |
+| --- | --- | --- | --- |
+| Gerar/baixar backups (`manage_backups`) | Sim | Não | Não |
+| Configurar identidade (`change_configuracaobiblioteca`) | Sim | Não | Não |
+| Gerenciar reservas (`manage_reservas`, `view_leitor` e `marca_devolucao`) | Sim | Sim | Não |
+| Imprimir etiquetas (`print_etiquetas`) | Sim | Sim | Não |
+
+A migração `0011` acrescenta as permissões aos grupos já existentes. As mesmas permissões são aplicadas às contas novas. Contas técnicas continuam com a administração habitual. O servidor verifica as permissões em GET e POST, incluindo o download por identificador.
+
+### Backups
+
+A geração ocorre somente por POST com CSRF. A API de backup do SQLite cria uma cópia consistente e `quick_check` valida a integridade antes do registro. Arquivos privados (modo 0600), nome gerado no servidor e download por UUID; nomes e caminhos arbitrários e links simbólicos não são aceitos. O download usa `no-store`. Não há exclusão ou restauração pela interface, nem envio a serviços externos. As cópias são do banco; o arquivo de chave da instalação permanece no volume, conforme o guia Docker.
+
+### Reservas
+
+Reservas são por título, com uma entrada ativa por leitor/título. A ordem é por data de criação e identificador. Leitores inativos ficam suspensos; reativar recupera a posição original. A quantidade de exemplares disponíveis define quantas primeiras posições podem retirar; o restante aguarda, e o excedente à fila fica livre.
+
+O serviço transacional de empréstimo verifica a prioridade na central e na tela antiga e vincula a reserva atendida ao empréstimo. Renovação verifica reservas de outros leitores. Cancelamento e atendimento preservam registro, responsável e data. A reserva não garante liberação das políticas de atraso/limite; confira a retirada na central. Não há notificações ou expiração automática. Registros físicos legados no estado “Reservado” não são convertidos automaticamente em fila.
+
+### Identidade e impressão
+
+Nome, e-mail, telefone e orientações são informações públicas. A configuração é única e usa versão para evitar sobrescrever uma alteração concorrente. Etiquetas não incluem dados pessoais: nome da biblioteca, título abreviado e código do exemplar em texto. Até 60 por solicitação; o limite é verificado no servidor. As dimensões e instruções estão na prévia de impressão.
+
+### Consistência visual
+
+Formulários de catálogo compartilham disposição de ações e cancelamento para a lista correspondente. Detalhes de autor/gênero/idioma compartilham a tabela de obras. Disponibilidade usa um componente comum; exclusões têm confirmação identificada, botão de ação distinto e opção de cancelar. O detalhe do exemplar reúne as ações no conteúdo principal.

@@ -7,7 +7,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from acervo.acessos import configurar_grupos, criar_usuario
-from acervo.models import Autor, Emprestimo, Genero, Importacao, Leitor, Lingua, Livro, LivroCopia
+from acervo.models import Autor, Emprestimo, Genero, Importacao, Leitor, Lingua, Livro, LivroCopia, ConfiguracaoBiblioteca, Reserva
 
 MARCADOR = '[DEMO v1] acervo fictício'
 SENHA_DEMO = 'BibliotecaDemo2026!'
@@ -23,9 +23,10 @@ class Command(BaseCommand):
         configurar_grupos()
         if Importacao.objects.filter(nome=MARCADOR, concluida=True).exists():
             self.complementar_contas()
+            self.complementar_gestao()
             self.stdout.write('Demonstração já carregada. Acervo e senhas existentes foram preservados.')
             return
-        modelos = [Autor, Genero, Lingua, Livro, LivroCopia, Leitor, Emprestimo, Importacao, get_user_model()]
+        modelos = [Autor, Genero, Lingua, Livro, LivroCopia, ConfiguracaoBiblioteca, Reserva, Leitor, Emprestimo, Importacao, get_user_model()]
         if any(modelo.objects.exists() for modelo in modelos):
             raise CommandError('Carga recusada: o banco de demonstração precisa estar vazio. Nenhum registro foi alterado.')
         hoje = timezone.localdate()
@@ -81,6 +82,7 @@ class Command(BaseCommand):
         Importacao.objects.create(criado_por=gestor, nome=MARCADOR, dados={'versao': 1, 'data_referencia': hoje.isoformat(), 'ficticio': True}, resultado={'criadas': len(copias), 'ignoradas': 0}, concluida=True)
         Importacao.objects.create(criado_por=gestor, nome='[DEMO] exemplo-pendente.csv', dados={'tabelas': {'Acervo': {'cabecalho': ['Código', 'Título', 'Autor'], 'linhas': [{'numero': 2, 'valores': ['DEMO-EXTRA', 'Novo título fictício', 'Helena Campos']}]}}}, concluida=False)
         self.complementar_contas()
+        self.complementar_gestao()
         self.stdout.write(self.style.SUCCESS(f'Demonstração criada: {Livro.objects.count()} títulos, {len(copias)} exemplares, {len(leitores)} leitores e {Emprestimo.objects.count()} empréstimos.'))
         self.stdout.write('Acesso gestor: gestor_demo | Acesso atendente: atendente_demo | Senha fictícia de ambos: ' + SENHA_DEMO)
 
@@ -89,3 +91,24 @@ class Command(BaseCommand):
         for username, papel, ativo in [('consulta_demo', 'consulta', True), ('inativo_demo', 'atendente', False)]:
             if not get_user_model().objects.filter(username=username).exists():
                 criar_usuario(gestor, username=username, papel=papel, senha=SENHA_DEMO, exigir_troca=False, ativo=ativo, first_name='Conta fictícia', last_name=username, email=username+'@example.invalid')
+
+    def complementar_gestao(self):
+        ConfiguracaoBiblioteca.objects.get_or_create(pk=1, defaults={
+            'nome': 'BibliotecaPI', 'email': 'biblioteca@example.invalid',
+            'telefone': '(00) 00000-0000', 'orientacoes': 'Ambiente fictício para testar acervo, circulação e reservas.'})
+        if Reserva.objects.exists():
+            return
+        gestor = get_user_model().objects.get(username='gestor_demo')
+        livros = list(Livro.objects.order_by('pk'))
+        leitores = list(Leitor.objects.filter(ativo=True).order_by('pk'))
+        if len(livros) < 3 or len(leitores) < 6:
+            return
+        for leitor in leitores[4:6]:
+            Reserva.objects.create(livro=livros[2], leitor=leitor, criado_por=gestor)
+        cancelada = Reserva.objects.create(livro=livros[0], leitor=leitores[0], criado_por=gestor)
+        Reserva.objects.filter(pk=cancelada.pk).update(estado='c', encerrado_em=timezone.now(), encerrado_por=gestor)
+        evento = Emprestimo.objects.filter(devolvido_em__isnull=False, leitor__isnull=False).first()
+        if evento:
+            atendida = Reserva.objects.create(livro=evento.copia.livro, leitor=evento.leitor, criado_por=gestor,
+                                             estado='u', encerrado_em=evento.criado_em, encerrado_por=gestor, emprestimo=evento)
+            Reserva.objects.filter(pk=atendida.pk).update(criado_em=evento.criado_em - timedelta(days=2))
