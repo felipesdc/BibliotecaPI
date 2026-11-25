@@ -166,3 +166,10 @@ Guia: [usuários e perfis](USUARIOS_E_PERFIS.md). As contas fictícias continuam
 - 19 novos testes: fila/prioridade/suspensão/cancelamento/renovação, múltiplas cópias e excedentes, consistência entre rotas, permissões e CSRF, backup real em arquivo privado e limpeza de cópia parcial, bloqueio de caminhos/links, geração/download/ausência/falha, configuração/concorrência/escape HTML e etiquetas/limites. **128 testes aprovados localmente e na imagem Docker final.** Sem teste de estresse concorrente.
 - Migração exercitada sobre a demonstração existente; a inicialização gerou o backup automático antes de migrar. Carga fictícia complementada com configuração e quatro reservas, preservando acervo e contas. Instalação principal não foi alterada.
 - Chrome desktop: login de `gestor_demo`, geração real de backup pelo painel com data/arquivo disponíveis, seleção de duas etiquetas, prévia de impressão em uma página contendo ambos os códigos, lista de posições da fila e configuração pública. Impressão cancelada após conferir; sem ensaio em impressora física. Backup da demonstração conferido por SQLite (`quick_check`, migração e contagens de oito estruturas) e download protegido testado no container.
+
+## Correção da validação do GitHub Actions — 25/11/2026
+
+- A execução `45719883534` do commit `d2b8235` falhou antes de criar jobs. O workflow usava `runner.temp` em `jobs.validar.env`, onde o contexto `runner` não é permitido.
+- O erro foi reproduzido com o validador oficial `actionlint 1.7.12`: `context "runner" is not allowed here`. A validação YAML anterior conferia sintaxe, mas não as restrições das expressões do GitHub Actions.
+- O caminho `SQLITE_PATH` passou a ser definido em uma etapa Bash usando `RUNNER_TEMP` e `GITHUB_ENV`, antes dos comandos da aplicação. O banco continua isolado no diretório temporário da execução.
+- `actionlint .github/workflows/verificacao.yml` aprovado; comando Bash exercitado em diretório temporário e conteúdo de ambiente conferido. Referências `v7` das duas ações oficiais confirmadas existentes na API do GitHub. Nenhuma alteração no código da aplicação ou no banco.
